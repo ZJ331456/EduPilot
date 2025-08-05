@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="基于nano-graphrag知识库的智能学习系统">
+    <meta name="keywords" content="AI学习助手,多智能体,知识图谱,苏格拉底式教学">
+    <title>多智能体学习助手</title>
+    <link rel="stylesheet" href="/static/css/multi_agent_interface.css?v=2.0.2">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>🤖 多智能体学习助手</h1>
+            <p>基于nano-graphrag知识库的智能学习系统</p>
+        </header>
+
+        <main class="main-content">
+            <aside class="sidebar-left">
+                <section class="panel">
+                    <h3>📊 学习状态</h3>
+                    <div class="status-item">
+                        <span class="status-label">连接状态</span>
+                        <span class="status-value" id="connectionStatus">
+                            离线 <span class="status-indicator offline"></span>
+                        </span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">当前会话</span>
+                        <span class="status-value" id="sessionId">未开始</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">处理状态</span>
+                        <span class="status-value" id="processingStatus">空闲</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">成功率</span>
+                        <span class="status-value" id="successRate">--</span>
+                    </div>
+                </section>
+
+                <section class="panel">
+                    <h3>🔄 学习流程</h3>
+                    <div class="workflow-steps" id="workflowSteps">
+                        <div class="workflow-step" data-step="query_interpreter">🔍 查询解释</div>
+                        <div class="workflow-step" data-step="knowledge_retriever">📚 知识检索</div>
+                        <div class="workflow-step" data-step="user_profile">👤 用户画像</div>
+                        <div class="workflow-step" data-step="socratic_guide">🤔 苏格拉底引导</div>
+                        <div class="workflow-step" data-step="planner">📋 规划制定</div>
+                        <div class="workflow-step" data-step="executor">💬 执行响应</div>
+                        <div class="workflow-step" data-step="learner">📈 学习反馈</div>
+                    </div>
+                </section>
+
+                <section class="panel user-profile-panel">
+                    <h3>👤 用户画像</h3>
+                    <div class="user-profile-content" id="userProfileContent">
+                        <div class="profile-status">
+                            <div class="status-item">
+                                <span class="status-label">实体数量</span>
+                                <span class="status-value" id="profileEntityCount">0</span>
+                            </div>
+                            <div class="status-item">
+                                <span class="status-label">关系数量</span>
+                                <span class="status-value" id="profileRelationCount">0</span>
+                            </div>
+                        </div>
+                        
+                        <div class="profile-summary" id="profileSummary">
+                            <div class="summary-placeholder">
+                                💭 开始对话后，我会逐步了解您的兴趣和背景
+                            </div>
+                        </div>
+                        
+                        <div class="profile-actions">
+                            <button class="profile-btn" id="viewProfileBtn" title="查看详细用户画像">
+                                📊 查看详情
+                            </button>
+                            <button class="profile-btn" id="exportProfileBtn" title="导出用户画像">
+                                💾 导出画像
+                            </button>
+                            <button class="profile-btn danger" id="clearProfileBtn" title="清空用户画像">
+                            🗑️ 清空画像
+                        </button>
+                            <button class="profile-btn" id="analyzeProfileBtn" title="深度分析用户画像">
+                            🔍 深度分析
+                        </button>
+                            <button class="profile-btn" id="chartProfileBtn" title="查看用户画像统计图表">
+                            📊 统计图表
+                        </button>
+                        </div>
+                    </div>
+                </section>
+            </aside>
+
+            <section class="chat-container">
+                <header class="chat-header">
+                    <h2>💬 智能对话</h2>
+                    <p>与AI助手进行苏格拉底式学习对话</p>
+                </header>
+                <div class="chat-messages" id="chatMessages">
+                    <div class="message system">
+                        🎓 欢迎使用多智能体学习助手！我将通过苏格拉底式对话帮助您深入理解知识。请输入您的问题开始学习之旅。
+                        <div class="learning-progress">
+                            <div class="learning-progress-bar" id="learningProgress"></div>
+                        </div>
+                    </div>
+                </div>
+                <footer class="chat-input">
+                    <div class="input-group">
+                        <input type="text" id="messageInput" placeholder="💭 请输入您想要学习的问题..." maxlength="500" aria-label="输入消息">
+                        <button class="btn btn-primary" id="sendButton" aria-label="发送消息">发送</button>
+                    </div>
+                </footer>
+            </section>
+
+            <aside class="sidebar-right">
+                <section class="panel">
+                    <h3>🤖 智能体</h3>
+                    <ul class="agent-list" id="agentList">
+                        <li class="agent-item">
+                            <div class="agent-name">🔍 查询解释器</div>
+                            <div class="agent-description">智能分析您的学习需求和问题意图</div>
+                        </li>
+                        <li class="agent-item">
+                            <div class="agent-name">📚 知识检索器</div>
+                            <div class="agent-description">从海量知识库中精准检索相关信息</div>
+                        </li>
+                        <li class="agent-item">
+                            <div class="agent-name">🤔 苏格拉底引导者</div>
+                            <div class="agent-description">通过启发式问题引导深度思考</div>
+                        </li>
+                        <li class="agent-item">
+                            <div class="agent-name">📋 规划器</div>
+                            <div class="agent-description">制定个性化的学习路径和计划</div>
+                        </li>
+                        <li class="agent-item">
+                            <div class="agent-name">💬 执行器</div>
+                            <div class="agent-description">执行学习计划并提供精准回答</div>
+                        </li>
+                        <li class="agent-item">
+                            <div class="agent-name">📈 学习器</div>
+                            <div class="agent-description">分析学习效果并优化学习体验</div>
+                        </li>
+                    </ul>
+                </section>
+
+                <section class="panel">
+                    <h3>⚙️ 操作</h3>
+                    <button class="btn btn-secondary" id="clearChatBtn" style="width: 100%; margin-bottom: 10px;">清空对话</button>
+                    <button class="btn btn-secondary" id="refreshStatusBtn" style="width: 100%; margin-bottom: 10px;">刷新状态</button>
+                    <button class="btn btn-secondary" id="downloadChatBtn" style="width: 100%;">导出对话</button>
+                </section>
+            </aside>
+        </main>
+    </div>
+
+    <!-- 通知组件 -->
+    <div id="notificationContainer" class="notification-container"></div>
+
+    <!-- 加载指示器 -->
+    <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+        <div class="loading-spinner">
+            <div class="spinner"></div>
+            <p>处理中...</p>
+                            </div>
+                    </div>
+
+    <script src="/static/js/multi_agent_interface.js?v=2.0.2"></script>
+</body>
+</html>

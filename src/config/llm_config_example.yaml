@@ -1,0 +1,117 @@
+# LLM配置示例文件
+# 复制此文件为 config.yaml 并根据你的需求修改
+
+# LLM配置
+llm:
+  # 默认LLM客户端（用于Agent对话生成）
+  default_client: "qwen"
+  
+  # 全局LLM参数（所有客户端共享的默认参数）
+  global:
+    max_tokens: 2000
+    temperature: 0.7
+    top_p: 0.9
+    frequency_penalty: 0.0
+    presence_penalty: 0.0
+  
+  # ==================== Agent对话生成配置 ====================
+  # 用于智能体对话、推理、决策等任务
+  
+  # Qwen配置（阿里云百炼）- 用于Agent对话生成
+  qwen:
+    enabled: true  # 是否启用Qwen客户端
+    api_key: "your_qwen_api_key_here"  # 请替换为你的实际API密钥
+    base_url: "https://dashscope.aliyuncs.com/compatible-mode/v1"  # API基础URL
+    default_model: "qwen-plus"  # 对话生成模型
+    timeout: 30  # 请求超时时间（秒）
+    max_retries: 3  # 最大重试次数
+    # 模型参数（对话生成优化）
+    max_tokens: 2000
+    temperature: 0.7
+    top_p: 0.9
+    # 调试配置
+    debug: true
+    # 用途说明
+    purpose: "Agent对话生成和推理"
+  
+  # OpenAI配置（可选）- 用于Agent对话生成
+  openai:
+    enabled: false  # 是否启用OpenAI客户端
+    api_key: "your_openai_api_key_here"  # 请替换为你的实际API密钥
+    base_url: "https://api.openai.com/v1"  # API基础URL
+    default_model: "gpt-3.5-turbo"  # 对话生成模型
+    timeout: 30  # 请求超时时间（秒）
+    max_retries: 3  # 最大重试次数
+    # 模型参数（对话生成优化）
+    max_tokens: 2000
+    temperature: 0.7
+    top_p: 0.9
+    # 调试配置
+    debug: false
+    # 用途说明
+    purpose: "Agent对话生成和推理"
+  
+  # ==================== 嵌入检索配置 ====================
+  # 用于知识库检索、语义搜索等任务
+  
+  # Ollama配置 - 用于本地嵌入检索
+  ollama:
+    enabled: true  # 是否启用Ollama客户端
+    base_url: "http://localhost:11434"  # Ollama服务地址
+    default_model: "qwen2.5:latest"  # 本地对话模型（备用）
+    timeout: 30  # 请求超时时间（秒）
+    max_retries: 3  # 最大重试次数
+    # 嵌入模型配置（知识库检索专用）
+    embedding_model: "bge-m3:latest"  # 本地嵌入模型
+    embedding_dimension: 1024  # 嵌入向量维度
+    embedding_max_tokens: 8192  # 嵌入最大token数
+    # 模型参数（检索优化）
+    max_tokens: 1000  # 检索时使用较少的token
+    temperature: 0.3  # 检索时使用较低的温度
+    top_p: 0.9
+    # 调试配置
+    debug: false
+    # 用途说明
+    purpose: "本地嵌入检索和知识库搜索"
+  
+  # 备用配置（从环境变量读取，用于向后兼容）
+  fallback_to_env: true
+
+# 配置说明：
+# ==================== 配置架构说明 ====================
+# 本系统采用双模型架构：
+# 1. Agent对话生成：使用在线API（如Qwen、OpenAI）进行智能体对话、推理、决策
+# 2. 嵌入检索：使用本地模型（如Ollama）进行知识库检索、语义搜索
+#
+# ==================== 配置步骤 ====================
+# 1. 设置Agent对话生成：
+#    - 将 qwen.enabled 设置为 true
+#    - 替换 qwen.api_key 为你的实际API密钥
+#    - 将 default_client 设置为 "qwen"
+#
+# 2. 设置嵌入检索：
+#    - 将 ollama.enabled 设置为 true
+#    - 确保Ollama服务正在运行
+#    - 安装bge-m3模型：ollama pull bge-m3:latest
+#
+# 3. 根据需要调整模型参数：
+#    - 对话生成：较高的temperature（0.7）和max_tokens（2000）
+#    - 检索：较低的temperature（0.3）和max_tokens（1000）
+#
+# ==================== 模型推荐 ====================
+# Agent对话生成模型：
+#   - Qwen: qwen-plus, qwen-turbo, qwen-max
+#   - OpenAI: gpt-3.5-turbo, gpt-4, gpt-4-turbo
+#
+# 嵌入检索模型：
+#   - Ollama: bge-m3:latest（推荐）, all-minilm:latest
+#   - 在线: text-embedding-v1（Qwen）, text-embedding-ada-002（OpenAI）
+#
+# ==================== 性能优化建议 ====================
+# 1. 对话生成：使用在线API获得更好的推理能力
+# 2. 嵌入检索：使用本地模型降低延迟和成本
+# 3. 根据任务类型调整参数：
+#    - 创造性任务：高temperature
+#    - 精确任务：低temperature
+#    - 长文本：高max_tokens
+#    - 快速响应：低max_tokens 

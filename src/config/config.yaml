@@ -1,0 +1,387 @@
+# 多智能体学习助手系统配置文件
+# 版本: 1.0.0
+
+# 应用基础配置
+app:
+  name: "多智能体学习助手"
+  version: "1.0.0"
+  debug: true
+  host: "0.0.0.0"
+  port: 8000
+  workers: 4
+
+# 数据库配置
+database:
+  mongodb:
+    url: "mongodb://localhost:27017"
+    database_name: "hw_agent_db"
+    collections:
+      conversations: "conversations"
+      user_profiles: "user_profiles"
+      knowledge_queries: "knowledge_queries"
+      system_metrics: "system_metrics"
+      learning_data: "learning_data"
+      enhanced_learning: "enhanced_learning"
+    connection_pool:
+      min_size: 10
+      max_size: 100
+      max_idle_time_ms: 30000
+
+# LLM配置
+llm:
+  # 默认LLM客户端（用于Agent对话生成）
+  default_client: "qwen"
+  
+  # 全局LLM参数（所有客户端共享的默认参数）
+  global:
+    max_tokens: 2000
+    temperature: 0.7
+    top_p: 0.9
+    frequency_penalty: 0.0
+    presence_penalty: 0.0
+  
+  # ==================== Agent对话生成配置 ====================
+  # 用于智能体对话、推理、决策等任务
+  
+  # Qwen配置（阿里云百炼）- 用于Agent对话生成
+  qwen:
+    enabled: true
+    api_key: "sk-0680b9634a644828a3a9622143c0c079"  # 你的Qwen API密钥
+    base_url: "https://dashscope.aliyuncs.com/compatible-mode/v1"
+    default_model: "qwen-plus"  # 对话生成模型
+    timeout: 30
+    max_retries: 3
+    # 模型参数（对话生成优化）
+    max_tokens: 2000
+    temperature: 0.7
+    top_p: 0.9
+    # 调试配置
+    debug: true
+    # 用途说明
+    purpose: "Agent对话生成和推理"
+  
+  # OpenAI配置（可选）- 用于Agent对话生成
+  openai:
+    enabled: false
+    api_key: "your_openai_api_key_here"  # 请替换为你的实际API密钥
+    base_url: "https://api.openai.com/v1"
+    default_model: "gpt-3.5-turbo"  # 对话生成模型
+    timeout: 30
+    max_retries: 3
+    # 模型参数（对话生成优化）
+    max_tokens: 2000
+    temperature: 0.7
+    top_p: 0.9
+    # 调试配置
+    debug: false
+    # 用途说明
+    purpose: "Agent对话生成和推理"
+  
+  # ==================== 嵌入检索配置 ====================
+  # 用于知识库检索、语义搜索等任务
+  
+  # Ollama配置 - 用于本地嵌入检索
+  ollama:
+    enabled: true
+    base_url: "http://localhost:11434"
+    default_model: "qwen2.5:latest"  # 本地对话模型（备用）
+    timeout: 30
+    max_retries: 3
+    # 嵌入模型配置（知识库检索专用）
+    embedding_model: "bge-m3:latest"  # 本地嵌入模型
+    embedding_dimension: 1024  # 嵌入向量维度
+    embedding_max_tokens: 8192  # 嵌入最大token数
+    # 模型参数（检索优化）
+    max_tokens: 1000  # 检索时使用较少的token
+    temperature: 0.3  # 检索时使用较低的温度
+    top_p: 0.9
+    # 调试配置
+    debug: false
+    # 用途说明
+    purpose: "本地嵌入检索和知识库搜索"
+  
+  # 备用配置（从环境变量读取，用于向后兼容）
+  fallback_to_env: true
+
+# 知识库配置
+knowledge_base:
+  # 知识库根目录
+  root_dir: "../concept_knowledge_bases"
+  
+  # 缓存配置
+  cache:
+    enabled: true
+    max_size: 1000
+    ttl_hours: 24
+    cache_dir: "data/retrieval_cache"
+  
+  # 嵌入模型配置（使用本地Ollama模型）
+  embedding:
+    # 使用Ollama的bge-m3模型进行嵌入
+    model: "bge-m3:latest"  # 对应llm.ollama.embedding_model
+    dimension: 1024  # 对应llm.ollama.embedding_dimension
+    max_token_size: 8192  # 对应llm.ollama.embedding_max_tokens
+    batch_size: 32
+    # 嵌入客户端配置
+    client: "ollama"  # 指定使用Ollama客户端进行嵌入
+    timeout: 30
+    max_retries: 3
+  
+  # 检索配置
+  retrieval:
+    top_k: 5
+    similarity_threshold: 0.7
+    max_concurrent_queries: 10
+    timeout_seconds: 30
+    # 检索优化参数
+    use_semantic_search: true
+    use_hybrid_search: false  # 是否使用混合检索（语义+关键词）
+    rerank_enabled: false  # 是否启用重排序
+
+# 智能体配置
+agents:
+  # LLM客户端配置（用于智能体对话生成）
+  llm_client: "qwen"  # 指定使用Qwen进行智能体对话
+  
+  # 查询解释智能体
+  query_interpreter:
+    enabled: true
+    confidence_threshold: 0.6
+    max_analysis_time: 10
+    # 使用Qwen进行查询解释
+    llm_client: "qwen"
+    
+  # 决策智能体
+  decision_agent:
+    enabled: true
+    retrieval_threshold: 0.5
+    # 使用Qwen进行决策推理
+    llm_client: "qwen"
+    no_retrieval_patterns:
+      - "你好|您好|hello|hi"
+      - "谢谢|感谢|thank"
+      - "再见|拜拜|goodbye|bye"
+      - "今天天气|现在几点|当前时间"
+      - "计算|算一下|\\d+[+\\-*/]\\d+"
+      - "翻译.*成|translate.*to"
+    strong_retrieval_indicators:
+      - "什么是|介绍一下|解释|说明|定义"
+      - ".*的概念|.*的含义|.*的定义|.*的特点"
+      - ".*的历史|.*的发展|.*的起源"
+      - ".*的作用|.*的功能|.*的意义"
+      - ".*的分类|.*的类型|.*的种类"
+      - ".*的原理|.*的机制|.*的过程"
+  
+  # 知识检索智能体
+  knowledge_retriever:
+    enabled: true
+    cache_enabled: true
+    max_cache_size: 1000
+    cache_ttl_hours: 24
+    concurrent_retrieval: true
+    max_concurrent_queries: 5
+    # 使用Ollama进行知识检索
+    embedding_client: "ollama"
+    # 使用Qwen进行检索结果处理
+    llm_client: "qwen"
+    
+  # 规划智能体
+  planner:
+    enabled: true
+    max_plan_length: 10
+    plan_timeout: 30
+    # 使用Qwen进行规划推理
+    llm_client: "qwen"
+    
+  # 执行智能体
+  executor:
+    enabled: true
+    max_execution_time: 60
+    response_templates_dir: "data/response_templates"
+    # 使用Qwen进行执行决策
+    llm_client: "qwen"
+    
+  # 苏格拉底引导智能体
+  socratic_guide:
+    enabled: true
+    max_questions: 5
+    question_timeout: 30
+    understanding_threshold: 0.7
+    # 使用Qwen进行苏格拉底式引导
+    llm_client: "qwen"
+    
+  # 学习智能体
+  learner:
+    enabled: true
+    enhanced_mode: true
+    learning_data_dir: "data/learning"
+    max_learning_records: 10000
+    analysis_depth: "detailed"  # basic, detailed, comprehensive
+    # 使用Qwen进行学习分析
+    llm_client: "qwen"
+    
+  # 用户画像智能体
+  user_profile:
+    enabled: true
+    profile_dir: "data/user_profiles"
+    max_profile_size: 10000
+    update_frequency: 300  # 秒
+    # 使用Qwen进行用户画像分析
+    llm_client: "qwen"
+    dimensions:
+      - "knowledge"
+      - "skills"
+      - "interests"
+      - "personality"
+      - "learning_style"
+      - "emotions"
+
+# 多智能体系统配置
+multi_agent_system:
+  # 工作流配置
+  workflow:
+    max_conversation_turns: 20
+    session_timeout: 3600  # 秒
+    max_concurrent_sessions: 100
+    
+  # 会话管理
+  session:
+    cleanup_interval: 3600  # 秒
+    max_session_age: 86400  # 24小时
+    session_dir: "data/sessions"
+    
+  # 性能配置
+  performance:
+    max_memory_usage: "4GB"
+    cpu_limit: 0.8
+    enable_profiling: false
+
+# 存储配置
+storage:
+  # 数据目录
+  data_dir: "data"
+  
+  # 备份配置
+  backup:
+    enabled: true
+    auto_backup: true
+    backup_interval: 86400  # 24小时
+    backup_dir: "data/backups"
+    max_backups: 30
+    
+  # 导出配置
+  export:
+    formats: ["json", "csv", "rdf"]
+    export_dir: "data/exports"
+    
+  # 清理配置
+  cleanup:
+    enabled: true
+    cleanup_interval: 604800  # 7天
+    max_data_age: 2592000  # 30天
+
+# 日志配置
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file:
+    enabled: true
+    path: "logs/hw_agent.log"
+    max_size: "100MB"
+    backup_count: 5
+  error_file:
+    enabled: true
+    path: "logs/error.log"
+    max_size: "50MB"
+    backup_count: 3
+  console:
+    enabled: true
+    level: "INFO"
+
+# 安全配置
+security:
+  # API安全
+  api:
+    rate_limit: 100  # 每分钟请求数
+    max_request_size: "10MB"
+    cors_origins: ["*"]
+    
+  # 数据安全
+  data:
+    encryption_enabled: false
+    sensitive_fields: ["password", "api_key", "token"]
+    
+  # 认证配置
+  authentication:
+    enabled: false
+    jwt_secret: "${JWT_SECRET}"
+    token_expiry: 86400  # 24小时
+
+# 监控配置
+monitoring:
+  # 健康检查
+  health_check:
+    enabled: true
+    interval: 60  # 秒
+    
+  # 指标收集
+  metrics:
+    enabled: true
+    collection_interval: 300  # 秒
+    
+  # 告警配置
+  alerts:
+    enabled: false
+    email:
+      smtp_server: ""
+      smtp_port: 587
+      username: ""
+      password: ""
+
+# 开发配置
+development:
+  # 调试模式
+  debug:
+    enabled: true
+    verbose_logging: true
+    show_sql: false
+    
+  # 测试配置
+  testing:
+    test_data_dir: "tests/data"
+    mock_llm: true
+    mock_database: false
+    
+  # 文档配置
+  documentation:
+    auto_generate: true
+    output_dir: "docs"
+    include_examples: true
+
+# 环境特定配置
+environments:
+  development:
+    debug: true
+    log_level: "DEBUG"
+    database:
+      url: "mongodb://localhost:27017"
+    
+  production:
+    debug: false
+    log_level: "WARNING"
+    database:
+      url: "${MONGODB_URL}"
+    security:
+      authentication:
+        enabled: true
+    monitoring:
+      alerts:
+        enabled: true
+        
+  testing:
+    debug: true
+    log_level: "DEBUG"
+    database:
+      url: "mongodb://localhost:27017/test"
+    llm:
+      mock_llm: true 
