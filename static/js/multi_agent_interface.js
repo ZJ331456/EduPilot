@@ -3,6 +3,9 @@
  * Optimized JavaScript implementation
  */
 
+console.log('=== JavaScript文件开始加载 ===');
+console.log('当前时间:', new Date().toLocaleString());
+
 class MultiAgentInterface {
     constructor() {
         this.currentSessionId = null;
@@ -15,11 +18,29 @@ class MultiAgentInterface {
     }
 
     init() {
+        // 初始化会话ID
+        if (!this.currentSessionId) {
+            this.currentSessionId = this.generateSessionId();
+        }
+        
         this.setupEventListeners();
         this.initializeUI();
+        this.initializeSidebarState();
         this.checkSystemHealth();
         this.loadUserProfile();
         this.startHealthCheck();
+        
+        // 检查是否有从首页传递的初始问题
+        this.loadInitialQuestion();
+        
+        // 检查并恢复聊天状态
+        this.restoreChatState();
+        
+        // 初始化当前对话信息显示
+        this.updateCurrentConversationInfo();
+        
+        // 初始化侧边栏对话列表
+        this.refreshSidebarConversationList();
         
         // 确保用户画像数据正确加载
         setTimeout(() => {
@@ -28,9 +49,56 @@ class MultiAgentInterface {
     }
 
     setupEventListeners() {
+        // Welcome screen events
+        const welcomeMessageInput = document.getElementById('welcomeMessageInput');
+        const welcomeSendButton = document.getElementById('welcomeSendButton');
+        
+        console.log('=== 欢迎界面元素检查 ===');
+        console.log('Welcome input element:', welcomeMessageInput);
+        console.log('Welcome send button:', welcomeSendButton);
+        console.log('Welcome input exists:', !!welcomeMessageInput);
+        console.log('Welcome button exists:', !!welcomeSendButton);
+        
+        // 检查元素的父容器
+        if (welcomeSendButton) {
+            console.log('Welcome button parent:', welcomeSendButton.parentElement);
+            console.log('Welcome button classes:', welcomeSendButton.className);
+            console.log('Welcome button disabled:', welcomeSendButton.disabled);
+        }
+        
+        if (welcomeMessageInput) {
+            console.log('Welcome input style display:', getComputedStyle(welcomeMessageInput).display);
+            console.log('Welcome input style visibility:', getComputedStyle(welcomeMessageInput).visibility);
+        }
+        
+        if (welcomeSendButton) {
+            console.log('Welcome button style display:', getComputedStyle(welcomeSendButton).display);
+            console.log('Welcome button style visibility:', getComputedStyle(welcomeSendButton).visibility);
+            console.log('Welcome button style pointer-events:', getComputedStyle(welcomeSendButton).pointerEvents);
+        }
+        
+        welcomeMessageInput?.addEventListener('keypress', (e) => {
+            console.log('Welcome input keypress:', e.key);
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                console.log('Enter pressed, calling sendWelcomeMessage');
+                this.sendWelcomeMessage();
+            }
+        });
+
+        welcomeSendButton?.addEventListener('click', (e) => {
+            console.log('Welcome send button clicked');
+            e.preventDefault();
+            this.sendWelcomeMessage();
+        });
+        
+
+
         // Message input events
         const messageInput = document.getElementById('messageInput');
         const sendButton = document.getElementById('sendButton');
+        
+
         
         messageInput?.addEventListener('keypress', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
@@ -39,11 +107,18 @@ class MultiAgentInterface {
             }
         });
 
-        sendButton?.addEventListener('click', () => this.sendMessage());
+        sendButton?.addEventListener('click', () => {
+            this.sendMessage();
+        });
 
         // Button events
         document.getElementById('clearChatBtn')?.addEventListener('click', () => this.clearChat());
-        document.getElementById('refreshStatusBtn')?.addEventListener('click', () => this.refreshStatus());
+        
+        const refreshBtn = document.getElementById('refreshStatusBtn');
+        refreshBtn?.addEventListener('click', () => {
+            this.refreshStatus();
+        });
+        
         document.getElementById('downloadChatBtn')?.addEventListener('click', () => this.downloadChat());
 
         // User profile buttons
@@ -51,7 +126,61 @@ class MultiAgentInterface {
         document.getElementById('exportProfileBtn')?.addEventListener('click', () => this.exportUserProfile());
         document.getElementById('clearProfileBtn')?.addEventListener('click', () => this.clearUserProfile());
         document.getElementById('analyzeProfileBtn')?.addEventListener('click', () => this.analyzeUserProfile());
-        document.getElementById('chartProfileBtn')?.addEventListener('click', () => this.showUserProfileChart());
+        
+        // 用户画像导航按钮
+        document.getElementById('userProfileNavBtn')?.addEventListener('click', () => this.navigateToUserProfile());
+
+        // 历史对话管理按钮
+        console.log('=== 设置历史对话管理按钮事件监听器 ===');
+        
+        const newConversationBtn = document.getElementById('newConversationBtn');
+        const conversationHistoryBtn = document.getElementById('conversationHistoryBtn');
+        const createNewConversationBtn = document.getElementById('createNewConversationBtn');
+        const refreshConversationListBtn = document.getElementById('refreshConversationListBtn');
+        const closeConversationHistoryModal = document.getElementById('closeConversationHistoryModal');
+        
+        console.log('newConversationBtn element:', newConversationBtn);
+        console.log('conversationHistoryBtn element:', conversationHistoryBtn);
+        console.log('createNewConversationBtn element:', createNewConversationBtn);
+        console.log('refreshConversationListBtn element:', refreshConversationListBtn);
+        console.log('closeConversationHistoryModal element:', closeConversationHistoryModal);
+        
+        if (newConversationBtn) {
+            console.log('新建对话按钮找到，添加事件监听器');
+            newConversationBtn.addEventListener('click', (e) => {
+                console.log('=== 新建对话按钮被点击 ===');
+                console.log('Event:', e);
+                console.log('Target:', e.target);
+                console.log('调用 createNewConversation 方法');
+                this.createNewConversation();
+            });
+        } else {
+            console.error('新建对话按钮未找到！');
+        }
+        
+        if (conversationHistoryBtn) {
+            console.log('对话历史按钮找到，添加事件监听器');
+            conversationHistoryBtn.addEventListener('click', (e) => {
+                console.log('=== 对话历史按钮被点击 ===');
+                console.log('Event:', e);
+                console.log('调用 showConversationHistory 方法');
+                this.showConversationHistory();
+            });
+        } else {
+            console.error('对话历史按钮未找到！');
+        }
+        
+        createNewConversationBtn?.addEventListener('click', () => this.createNewConversation());
+        refreshConversationListBtn?.addEventListener('click', () => this.refreshConversationList());
+        closeConversationHistoryModal?.addEventListener('click', () => this.closeConversationHistoryModal());
+
+        // 边栏切换按钮
+        document.getElementById('sidebarToggle')?.addEventListener('click', () => this.toggleSidebar());
+        
+        // 移除边栏遮罩层点击关闭功能，允许用户正常使用右侧内容
+        // document.getElementById('sidebarOverlay')?.addEventListener('click', () => this.closeSidebar());
+
+
 
         // Keyboard shortcuts
         document.addEventListener('keydown', (e) => this.handleKeyboardShortcuts(e));
@@ -59,6 +188,14 @@ class MultiAgentInterface {
         // Mouse events for enhanced UX
         document.addEventListener('mouseover', (e) => this.handleMouseEvents(e, 'over'));
         document.addEventListener('mouseout', (e) => this.handleMouseEvents(e, 'out'));
+        
+        // 模态框点击外部关闭
+        document.addEventListener('click', (e) => {
+            const modal = document.getElementById('conversationHistoryModal');
+            if (modal && e.target === modal) {
+                this.closeConversationHistoryModal();
+            }
+        });
     }
 
     initializeUI() {
@@ -119,32 +256,164 @@ class MultiAgentInterface {
         }
     }
 
+    loadInitialQuestion() {
+        // 检查sessionStorage中是否有初始问题
+        const initialQuestion = sessionStorage.getItem('initialQuestion');
+        if (initialQuestion) {
+            // 将问题填入欢迎界面的输入框
+            const welcomeMessageInput = document.getElementById('welcomeMessageInput');
+            if (welcomeMessageInput) {
+                welcomeMessageInput.value = initialQuestion;
+                // 聚焦到输入框
+                welcomeMessageInput.focus();
+                // 将光标移到文本末尾
+                welcomeMessageInput.setSelectionRange(initialQuestion.length, initialQuestion.length);
+            }
+            
+            // 清除sessionStorage中的问题，避免重复使用
+            sessionStorage.removeItem('initialQuestion');
+        }
+    }
+
+    async sendWelcomeMessage() {
+        console.log('sendWelcomeMessage called');
+        const input = document.getElementById('welcomeMessageInput');
+        const message = input?.value?.trim();
+        
+        console.log('Input element:', input);
+        console.log('Message:', message);
+        console.log('isProcessing:', this.isProcessing);
+        
+        if (!message) {
+            console.log('No message provided');
+            alert('请输入您想要学习的问题');
+            return;
+        }
+        
+        if (this.isProcessing) {
+            console.log('Already processing');
+            return;
+        }
+        
+        console.log('Switching to chat interface...');
+        // Switch to chat interface
+        this.switchToChatInterface();
+        
+        // Clear welcome input
+        input.value = '';
+        
+        // Wait for interface switch animation to complete, then send message
+        setTimeout(async () => {
+            console.log('Sending message after interface switch:', message);
+            await this.sendMessageWithContent(message);
+        }, 800); // Wait for animation to complete
+    }
+
+    switchToChatInterface() {
+        const welcomeScreen = document.getElementById('welcomeScreen');
+        const chatContainer = document.getElementById('chatContainer');
+        
+        if (welcomeScreen && chatContainer) {
+            // Add welcome message first before switching interface
+            this.addMessage('🎓 欢迎使用多智能体学习助手！我将通过苏格拉底式对话帮助您深入理解知识。', 'system');
+            
+            // 保存聊天状态
+            this.saveChatState();
+            
+            // Add fade out animation to welcome screen
+            welcomeScreen.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+            welcomeScreen.style.opacity = '0';
+            welcomeScreen.style.transform = 'scale(0.95)';
+            
+            setTimeout(() => {
+                welcomeScreen.style.display = 'none';
+                chatContainer.style.display = 'flex';
+                
+                // Add fade in animation to chat container
+                chatContainer.style.opacity = '0';
+                chatContainer.style.transform = 'translateY(20px)';
+                
+                setTimeout(() => {
+                    chatContainer.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                    chatContainer.style.opacity = '1';
+                    chatContainer.style.transform = 'translateY(0)';
+                }, 50);
+            }, 500);
+        }
+    }
+
     async sendMessage() {
+        console.log('sendMessage called');
         const input = document.getElementById('messageInput');
         const message = input?.value?.trim();
         
-        if (!message || this.isProcessing) return;
+        console.log('Chat input element:', input);
+        console.log('Chat message:', message);
+        console.log('isProcessing:', this.isProcessing);
         
+        if (!message) {
+            console.log('No message in chat input');
+            return;
+        }
+        
+        if (this.isProcessing) {
+            console.log('Already processing, skipping');
+            return;
+        }
+        
+        // Clear input
+        input.value = '';
+        console.log('Chat input cleared, sending message:', message);
+        
+        // Send message with content
+        await this.sendMessageWithContent(message);
+    }
+
+    async sendMessageWithContent(message) {
+        console.log('sendMessageWithContent called with:', message);
+        
+        if (!message) {
+            console.log('No message provided to sendMessageWithContent');
+            return;
+        }
+        
+        if (this.isProcessing) {
+            console.log('Already processing, skipping sendMessageWithContent');
+            return;
+        }
+        
+        console.log('Adding user message to interface:', message);
         // Add user message to interface
         this.addMessage(message, 'user');
-        input.value = '';
         
+        console.log('Setting processing state to true');
         // Set processing state
         this.setProcessing(true);
         
         try {
+            console.log('Preparing API request...');
+            const requestData = {
+                query: message,
+                session_id: this.currentSessionId,
+                user_id: 'anonymous'  // 添加用户ID以确保用户画像更新
+            };
+            console.log('Request data:', requestData);
+            
+            console.log('Sending request to /api/multi-agent/query...');
             // Send query request
             const response = await this.makeRequest('/api/multi-agent/query', {
                 method: 'POST',
-                body: JSON.stringify({
-                    query: message,
-                    session_id: this.currentSessionId
-                })
+                body: JSON.stringify(requestData)
             });
             
-            if (response.success) {
+            console.log('API response received:', response);
+            
+            if (response && response.success) {
+                console.log('Response is successful');
+                
                 // Update session ID
-                if (!this.currentSessionId) {
+                if (!this.currentSessionId && response.session_id) {
+                    console.log('Setting new session ID:', response.session_id);
                     this.currentSessionId = response.session_id;
                     const sessionIdElement = document.getElementById('sessionId');
                     if (sessionIdElement) {
@@ -154,26 +423,50 @@ class MultiAgentInterface {
                 
                 // Handle response
                 if (response.socratic_question) {
+                    console.log('Adding socratic question:', response.socratic_question);
                     this.addSocraticQuestion(response.socratic_question);
-                } else {
+                } else if (response.final_response) {
+                    console.log('Adding assistant message:', response.final_response);
                     this.addMessage(response.final_response, 'assistant');
+                } else {
+                    console.log('No response content found, adding default message');
+                    this.addMessage('收到您的消息，正在处理中...', 'assistant');
                 }
                 
                 // Update workflow steps
-                this.updateWorkflowSteps(response.steps_completed);
+                if (response.steps_completed) {
+                    console.log('Updating workflow steps:', response.steps_completed);
+                    this.updateWorkflowSteps(response.steps_completed);
+                }
                 
                 // Update user profile display
-                this.updateUserProfileFromResponse(response);
+                if (response.state_summary) {
+                    console.log('Updating user profile from response');
+                    this.updateUserProfileFromResponse(response);
+                }
                 
             } else {
-                this.addMessage('抱歉，处理您的请求时出现了错误：' + (response.error || '未知错误'), 'system');
+                console.log('Response indicates failure:', response);
+                const errorMsg = response ? (response.error || '未知错误') : '服务器无响应';
+                this.addMessage('抱歉，处理您的请求时出现了错误：' + errorMsg, 'system');
             }
             
         } catch (error) {
             console.error('Send message failed:', error);
-            this.addMessage('网络错误，请检查连接后重试。', 'system');
+            console.error('Error details:', error.message, error.stack);
+            this.addMessage('网络错误，请检查连接后重试。错误详情：' + error.message, 'system');
         } finally {
+            console.log('Setting processing state to false');
             this.setProcessing(false);
+            
+            // 保存聊天状态
+            this.saveChatState();
+            
+            // 自动保存对话到历史记录（如果有消息内容）
+            if (this.messageHistory.length > 0) {
+                this.saveCurrentConversation();
+                this.updateCurrentConversationInfo();
+            }
         }
     }
 
@@ -230,10 +523,21 @@ class MultiAgentInterface {
             questionData: questionData,
             purpose: purposeText
         });
+        
+        // 保存聊天状态
+        this.saveChatState();
     }
 
-    addMessage(content, type) {
+    addMessage(content, type, saveToHistory = true) {
+        console.log('addMessage called with:', content, type, 'saveToHistory:', saveToHistory);
         const messagesContainer = document.getElementById('chatMessages');
+        console.log('Messages container:', messagesContainer);
+        
+        if (!messagesContainer) {
+            console.error('Messages container not found!');
+            return;
+        }
+        
         const messageDiv = document.createElement('div');
         messageDiv.className = `message ${type}`;
         
@@ -248,36 +552,49 @@ class MultiAgentInterface {
         metaDiv.textContent = timestamp;
         messageDiv.appendChild(metaDiv);
         
+        console.log('Adding message to container');
         this.addMessageToContainer(messageDiv, messagesContainer);
         
-        // Save to history
-        this.messageHistory.push({
-            content: content,
-            type: type,
-            timestamp: timestamp
-        });
+        // Save to history only if requested
+        if (saveToHistory) {
+            this.messageHistory.push({
+                content: content,
+                type: type,
+                timestamp: timestamp
+            });
+            console.log('Message added to history');
+        }
     }
 
     addMessageToContainer(messageDiv, container) {
+        console.log('addMessageToContainer called');
+        console.log('Container:', container);
+        console.log('Container scrollHeight before:', container.scrollHeight);
+        
         // Set initial opacity to 0
         messageDiv.style.opacity = '0';
         messageDiv.style.transform = 'translateY(10px)';
         
         container.appendChild(messageDiv);
+        console.log('Message div appended to container');
+        console.log('Container scrollHeight after:', container.scrollHeight);
         
         // Trigger animation
         setTimeout(() => {
             messageDiv.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
             messageDiv.style.opacity = '1';
             messageDiv.style.transform = 'translateY(0)';
+            console.log('Message animation triggered');
         }, 50);
         
         // Smooth scroll to bottom
         setTimeout(() => {
+            console.log('Scrolling to bottom, scrollHeight:', container.scrollHeight);
             container.scrollTo({
                 top: container.scrollHeight,
                 behavior: 'smooth'
             });
+            console.log('Scroll command executed');
         }, 100);
     }
 
@@ -540,7 +857,7 @@ class MultiAgentInterface {
     }
 
     clearChat() {
-        if (!confirm('确定要清空对话记录吗？')) {
+        if (!confirm('确定要清空所有对话记录吗？这将删除当前对话和所有历史对话，此操作无法撤销。')) {
             return;
         }
         
@@ -553,7 +870,7 @@ class MultiAgentInterface {
         setTimeout(() => {
             chatMessages.innerHTML = 
                 `<div class="message system">
-                    🎓 对话已清空，请输入新的问题开始学习。
+                    🎓 所有对话记录已清空，请输入新的问题开始学习。
                     <div class="learning-progress">
                         <div class="learning-progress-bar" id="learningProgress"></div>
                     </div>
@@ -562,12 +879,19 @@ class MultiAgentInterface {
             // Fade in effect
             chatMessages.style.opacity = '1';
             
+            // 重置对话状态
             this.messageHistory = [];
-            this.currentSessionId = null;
+            this.currentSessionId = this.generateSessionId();
             const sessionIdElement = document.getElementById('sessionId');
             if (sessionIdElement) {
-                sessionIdElement.textContent = '未开始';
+                sessionIdElement.textContent = this.currentSessionId.substring(0, 8) + '...';
             }
+            
+            // 清除所有历史对话记录
+            localStorage.removeItem('conversationHistory');
+            
+            // 清除聊天状态
+            this.clearChatState();
             
             // Reset workflow steps
             const steps = document.querySelectorAll('.workflow-step');
@@ -577,42 +901,121 @@ class MultiAgentInterface {
             
             // Reset learning progress bar
             this.updateLearningProgress(0, 6);
+            
+            // 更新当前对话信息
+            this.updateCurrentConversationInfo();
+            
+            // 刷新侧边栏对话列表
+            this.refreshSidebarConversationList();
+            
+            this.showNotification('所有对话记录已清空', 'success');
         }, 300);
     }
 
     async refreshStatus() {
-        await this.checkSystemHealth();
-        if (this.currentSessionId) {
-            try {
-                const sessionData = await this.makeRequest(`/api/multi-agent/session/${this.currentSessionId}`);
-                if (sessionData.exists) {
-                    console.log('Session status:', sessionData);
+        console.log('🔄 refreshStatus method called');
+        
+        // 显示刷新开始的通知
+        this.showNotification('正在刷新系统状态...', 'info');
+        
+        try {
+            console.log('🔍 Checking system health...');
+            await this.checkSystemHealth();
+            console.log('✅ System health check completed');
+            
+            if (this.currentSessionId) {
+                console.log('🔍 Checking session status for:', this.currentSessionId);
+                try {
+                    const sessionData = await this.makeRequest(`/api/multi-agent/session/${this.currentSessionId}`);
+                    if (sessionData.exists) {
+                        console.log('✅ Session status:', sessionData);
+                        this.showNotification('会话状态已刷新', 'success');
+                    } else {
+                        console.log('⚠️ Session does not exist');
+                        this.showNotification('会话不存在', 'warning');
+                    }
+                } catch (error) {
+                    console.error('❌ Failed to refresh session status:', error);
+                    this.showNotification('刷新会话状态失败: ' + error.message, 'error');
                 }
-            } catch (error) {
-                console.error('Failed to refresh session status:', error);
+            } else {
+                console.log('ℹ️ No current session ID');
+                this.showNotification('系统状态已刷新（无活动会话）', 'success');
             }
+            
+            // 刷新用户画像
+            console.log('🔍 Refreshing user profile...');
+            await this.loadUserProfile();
+            console.log('✅ User profile refreshed');
+            
+        } catch (error) {
+            console.error('❌ Failed to refresh status:', error);
+            this.showNotification('刷新状态失败: ' + error.message, 'error');
         }
+        
+        console.log('🔄 refreshStatus method completed');
     }
 
     downloadChat() {
-        if (this.messageHistory.length === 0) {
+        // 获取所有历史对话
+        const conversations = this.getConversationHistory();
+        
+        // 如果当前对话有内容，也包含在导出中
+        let currentConversation = null;
+        if (this.messageHistory.length > 0) {
+            const firstUserMessage = this.messageHistory.find(msg => msg.type === 'user');
+            const title = firstUserMessage ? 
+                (firstUserMessage.content.length > 30 ? 
+                    firstUserMessage.content.substring(0, 30) + '...' : 
+                    firstUserMessage.content) : 
+                '当前对话';
+            
+            currentConversation = {
+                id: this.currentSessionId,
+                title: title,
+                timestamp: new Date().toISOString(),
+                messages: this.messageHistory,
+                messageCount: this.messageHistory.length,
+                lastMessage: this.messageHistory.length > 0 ? 
+                    this.messageHistory[this.messageHistory.length - 1].content : ''
+            };
+        }
+        
+        // 合并所有对话数据
+        const allConversations = [...conversations];
+        if (currentConversation) {
+            // 检查当前对话是否已经在历史记录中
+            const existingIndex = allConversations.findIndex(conv => conv.id === currentConversation.id);
+            if (existingIndex >= 0) {
+                allConversations[existingIndex] = currentConversation;
+            } else {
+                allConversations.unshift(currentConversation);
+            }
+        }
+        
+        if (allConversations.length === 0) {
             this.showNotification('没有对话记录可以导出。', 'warning');
             return;
         }
         
-        const chatData = {
-            session_id: this.currentSessionId,
-            export_time: new Date().toISOString(),
-            messages: this.messageHistory
+        const exportData = {
+            export_info: {
+                export_time: new Date().toISOString(),
+                total_conversations: allConversations.length,
+                export_type: 'all_conversations'
+            },
+            conversations: allConversations
         };
         
-        const dataStr = JSON.stringify(chatData, null, 2);
+        const dataStr = JSON.stringify(exportData, null, 2);
         const dataBlob = new Blob([dataStr], {type: 'application/json'});
         
         const link = document.createElement('a');
         link.href = URL.createObjectURL(dataBlob);
-        link.download = `chat_export_${new Date().toISOString().split('T')[0]}.json`;
+        link.download = `all_conversations_export_${new Date().toISOString().split('T')[0]}.json`;
         link.click();
+        
+        this.showNotification(`已导出 ${allConversations.length} 个对话记录`, 'success');
     }
 
     handleKeyboardShortcuts(e) {
@@ -626,6 +1029,15 @@ class MultiAgentInterface {
         if ((e.ctrlKey || e.metaKey) && e.key === 'l') {
             e.preventDefault();
             this.clearChat();
+        }
+        
+        // ESC key to close sidebar
+        if (e.key === 'Escape') {
+            const sidebar = document.getElementById('collapsibleSidebar');
+            if (sidebar && sidebar.classList.contains('open')) {
+                e.preventDefault();
+                this.closeSidebar();
+            }
         }
     }
 
@@ -709,7 +1121,18 @@ class MultiAgentInterface {
         }
     }
 
+    generateSessionId() {
+        return 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    }
+
     async makeRequest(url, options = {}) {
+        // 使用相对路径，因为前端和后端在同一个端口（8000）
+        const fullUrl = url.startsWith('http') ? url : url;
+        
+        console.log('makeRequest called with URL:', url);
+        console.log('Full URL:', fullUrl);
+        console.log('makeRequest options:', options);
+        
         const defaultOptions = {
             headers: {
                 'Content-Type': 'application/json'
@@ -717,15 +1140,29 @@ class MultiAgentInterface {
         };
         
         const finalOptions = { ...defaultOptions, ...options };
+        console.log('Final request options:', finalOptions);
         
         try {
-            const response = await fetch(url, finalOptions);
+            console.log('Sending fetch request...');
+            const response = await fetch(fullUrl, finalOptions);
+            console.log('Fetch response received:', response);
+            console.log('Response status:', response.status);
+            console.log('Response ok:', response.ok);
+            
             if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+                const errorText = await response.text();
+                console.error('Response error text:', errorText);
+                throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
             }
-            return await response.json();
+            
+            console.log('Parsing response as JSON...');
+            const jsonData = await response.json();
+            console.log('Parsed JSON data:', jsonData);
+            return jsonData;
         } catch (error) {
             console.error('Request failed:', error);
+            console.error('Error type:', error.constructor.name);
+            console.error('Error message:', error.message);
             throw error;
         }
     }
@@ -750,7 +1187,7 @@ class MultiAgentInterface {
     async loadUserProfile() {
         try {
             const data = await this.makeRequest('/api/multi-agent/user-profile');
-            console.log('User profile data loaded:', data); // 添加调试日志
+            
             if (data.success && data.user_profile) {
                 this.updateUserProfileDisplay(data.user_profile);
             }
@@ -802,28 +1239,7 @@ class MultiAgentInterface {
     }
 
     updateUserProfileDisplay(profile) {
-        console.log('Updating user profile display:', profile); // 添加调试日志
-        
-        // Update statistics
-        const entityCount = profile.graph_statistics?.entity_count || 0;
-        const relationCount = profile.graph_statistics?.relation_count || 0;
-        
-        console.log('Entity count:', entityCount, 'Relation count:', relationCount); // 添加调试日志
-        
-        const entityCountElement = document.getElementById('profileEntityCount');
-        const relationCountElement = document.getElementById('profileRelationCount');
-        
-        console.log('Entity count element:', entityCountElement); // 添加调试日志
-        console.log('Relation count element:', relationCountElement); // 添加调试日志
-        
-        if (entityCountElement) {
-            entityCountElement.textContent = entityCount;
-            console.log('Updated entity count to:', entityCount); // 添加调试日志
-        }
-        if (relationCountElement) {
-            relationCountElement.textContent = relationCount;
-            console.log('Updated relation count to:', relationCount); // 添加调试日志
-        }
+        // 顶部统计卡片已删除，无需更新统计数据
         
         // Update user profile summary
         const summaryElement = document.getElementById('profileSummary');
@@ -935,7 +1351,7 @@ class MultiAgentInterface {
             // 调用后端API来清空用户画像
             const response = await this.makeRequest('/api/multi-agent/clear-user-profile', { 
                 method: 'POST',
-                body: JSON.stringify({ user_id: 'default_user' })
+                body: JSON.stringify({ user_id: 'anonymous' })
             });
             
             if (response.success) {
@@ -969,19 +1385,7 @@ class MultiAgentInterface {
         }
     }
 
-    async showUserProfileChart() {
-        try {
-            const data = await this.makeRequest('/api/multi-agent/user-profile');
-            if (data.success && data.user_profile) {
-                this.showProfileCharts(data.user_profile);
-            } else {
-                this.showNotification('显示用户画像图表失败', 'error');
-            }
-        } catch (error) {
-            console.error('Failed to show user profile charts:', error);
-            this.showNotification('显示用户画像图表失败', 'error');
-        }
-    }
+
 
     // 辅助方法
     showUserProfileModal(profile) {
@@ -1247,7 +1651,10 @@ class MultiAgentInterface {
             console.error('Failed to load user profile graph:', error);
             const graphContainer = modal.querySelector('#userProfileGraph');
             if (graphContainer) {
-                graphContainer.innerHTML = '<div style="text-align: center; padding: 20px; color: #666;">图谱加载失败</div>';
+                graphContainer.textContent = '图谱加载失败';
+                graphContainer.style.textAlign = 'center';
+                graphContainer.style.padding = '20px';
+                graphContainer.style.color = '#666';
             }
         }
     }
@@ -1261,7 +1668,10 @@ class MultiAgentInterface {
         const edges = graphData.edges || [];
         
         if (nodes.length === 0) {
-            graphContainer.innerHTML = '<div style="text-align: center; padding: 20px; color: #666;">暂无图谱数据</div>';
+            graphContainer.textContent = '暂无图谱数据';
+            graphContainer.style.textAlign = 'center';
+            graphContainer.style.padding = '20px';
+            graphContainer.style.color = '#666';
             return;
         }
         
@@ -1426,23 +1836,17 @@ class MultiAgentInterface {
                 </div>
                 <p>${this.getCompletenessDescription(completeness)}</p>
             </div>
+            
+            <div class="analysis-section">
+                <h4>🧠 画像丰富度</h4>
+                <p>${entityCount > 0 ? 
+                    `您的用户画像包含 ${entityCount} 个实体和 ${relationCount} 个关系，知识图谱较为丰富。` : 
+                    '您的用户画像目前较为简单，建议多进行学习互动以丰富您的知识图谱。'
+                }</p>
+            </div>
         `;
         
-        if (entityCount > 0) {
-            analysis += `
-                <div class="analysis-section">
-                    <h4>🎯 画像丰富度</h4>
-                    <p>您的用户画像包含 ${entityCount} 个实体和 ${relationCount} 个关系，这表明系统对您有较好的了解。</p>
-                </div>
-            `;
-        } else {
-            analysis += `
-                <div class="analysis-section">
-                    <h4>🎯 画像丰富度</h4>
-                    <p>您的用户画像目前较为简单，建议多与系统交互以丰富画像信息。</p>
-                </div>
-            `;
-        }
+
         
         const context = profile.user_context;
         if (context) {
@@ -1490,82 +1894,671 @@ class MultiAgentInterface {
         return suggestions.join('');
     }
 
-    showProfileCharts(profile) {
-        const modal = document.createElement('div');
-        modal.className = 'modal-overlay';
-        modal.innerHTML = `
-            <div class="modal-content charts-modal">
-                <div class="modal-header">
-                    <h3>📊 用户画像统计图表</h3>
-                    <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">&times;</button>
-                </div>
-                <div class="modal-body">
-                    <div class="chart-container">
-                        <canvas id="profileChart" width="400" height="300"></canvas>
-                    </div>
-                    <div class="chart-legend">
-                        <div class="legend-item">
-                            <span class="legend-color" style="background: #007bff;"></span>
-                            <span>实体数量</span>
-                        </div>
-                        <div class="legend-item">
-                            <span class="legend-color" style="background: #28a745;"></span>
-                            <span>关系数量</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-secondary" onclick="this.closest('.modal-overlay').remove()">关闭</button>
-                </div>
-            </div>
-        `;
+    // 导航到用户画像页面
+    navigateToUserProfile() {
+        window.location.href = '/static/user_profile.html';
+    }
+
+    // 切换边栏显示/隐藏
+    toggleSidebar() {
+        const sidebar = document.getElementById('collapsibleSidebar');
+        const toggleButton = document.getElementById('sidebarToggle');
+        const mainContent = document.querySelector('.main-content');
+        const overlay = document.getElementById('sidebarOverlay');
         
-        document.body.appendChild(modal);
+        if (sidebar && toggleButton && mainContent) {
+            const isOpen = sidebar.classList.contains('open');
+            
+            if (isOpen) {
+                this.closeSidebar();
+            } else {
+                this.openSidebar();
+            }
+        }
+    }
+
+    // 打开边栏
+    openSidebar() {
+        console.log('=== 打开边栏方法被调用 ===');
+        const sidebar = document.getElementById('collapsibleSidebar');
+        const toggleButton = document.getElementById('sidebarToggle');
+        const mainContent = document.querySelector('.main-content');
+        const overlay = document.getElementById('sidebarOverlay');
         
-        // 简单的图表绘制（使用Canvas）
+        console.log('边栏元素:', sidebar);
+        console.log('切换按钮:', toggleButton);
+        console.log('主内容区:', mainContent);
+        console.log('遮罩层:', overlay);
+        
+        if (sidebar) {
+            sidebar.classList.add('open');
+            sidebar.classList.remove('closed');
+            console.log('已添加open类到边栏，移除closed类');
+        }
+        if (toggleButton) {
+            toggleButton.classList.add('active');
+            console.log('已添加active类到切换按钮');
+        }
+        if (mainContent) {
+            mainContent.classList.add('sidebar-open');
+            console.log('已添加sidebar-open类到主内容区');
+        }
+        if (overlay) {
+            overlay.classList.add('active');
+            console.log('已添加active类到遮罩层');
+        }
+        
+        localStorage.setItem('sidebarOpen', 'true');
+        console.log('已保存边栏状态到localStorage');
+    }
+
+    // 关闭边栏
+    closeSidebar() {
+        console.log('=== 关闭边栏方法被调用 ===');
+        const sidebar = document.getElementById('collapsibleSidebar');
+        const toggleButton = document.getElementById('sidebarToggle');
+        const mainContent = document.querySelector('.main-content');
+        const overlay = document.getElementById('sidebarOverlay');
+        
+        if (sidebar) {
+            sidebar.classList.remove('open');
+            sidebar.classList.add('closed');
+            console.log('已添加closed类到边栏');
+        }
+        if (toggleButton) {
+            toggleButton.classList.remove('active');
+            console.log('已移除active类从切换按钮');
+        }
+        if (mainContent) {
+            mainContent.classList.remove('sidebar-open');
+            console.log('已移除sidebar-open类从主内容区');
+        }
+        if (overlay) {
+            overlay.classList.remove('active');
+            console.log('已移除active类从遮罩层');
+        }
+        
+        localStorage.setItem('sidebarOpen', 'false');
+        console.log('已保存边栏关闭状态到localStorage');
+    }
+
+    // 初始化边栏状态
+    initializeSidebarState() {
+        console.log('=== 初始化边栏状态 ===');
+        
+        // 临时清除localStorage中的边栏状态，强制打开边栏
+        localStorage.removeItem('sidebarOpen');
+        console.log('已清除localStorage中的sidebarOpen');
+        
+        const sidebarOpen = localStorage.getItem('sidebarOpen');
+        console.log('localStorage中的sidebarOpen值:', sidebarOpen);
+        
+        const sidebar = document.getElementById('collapsibleSidebar');
+        console.log('边栏元素:', sidebar);
+        
+        // 强制打开边栏
+        console.log('强制打开边栏');
+        this.openSidebar();
+        
+        // 检查边栏状态
         setTimeout(() => {
-            this.drawProfileChart(profile);
+            const isOpen = sidebar?.classList.contains('open');
+            console.log('边栏是否打开:', isOpen);
+            console.log('边栏类名:', sidebar?.className);
+            
+            // 检查按钮是否可见
+            const newBtn = document.getElementById('newConversationBtn');
+            if (newBtn) {
+                const rect = newBtn.getBoundingClientRect();
+                console.log('新建对话按钮位置:', rect);
+                console.log('新建对话按钮是否可见:', rect.width > 0 && rect.height > 0);
+            }
         }, 100);
     }
 
-    drawProfileChart(profile) {
-        const canvas = document.getElementById('profileChart');
-        if (!canvas) return;
+
+
+    // 保存聊天状态到localStorage
+    saveChatState() {
+        try {
+            const chatState = {
+                isChatMode: true,
+                sessionId: this.currentSessionId,
+                messageHistory: this.messageHistory,
+                timestamp: Date.now()
+            };
+            localStorage.setItem('chatState', JSON.stringify(chatState));
+            console.log('Chat state saved:', chatState);
+        } catch (error) {
+            console.error('Failed to save chat state:', error);
+        }
+    }
+
+    // 恢复聊天状态
+    restoreChatState() {
+        try {
+            // 检查URL参数，判断是否从用户画像返回
+            const urlParams = new URLSearchParams(window.location.search);
+            const fromProfile = urlParams.get('from') === 'profile';
+            
+            console.log('Checking chat state restoration...');
+            console.log('From profile:', fromProfile);
+            
+            const savedState = localStorage.getItem('chatState');
+            if (savedState) {
+                const chatState = JSON.parse(savedState);
+                console.log('Found saved chat state:', chatState);
+                
+                // 检查状态是否过期（24小时）
+                const isExpired = Date.now() - chatState.timestamp > 24 * 60 * 60 * 1000;
+                console.log('State expired:', isExpired);
+                
+                // 只有在从用户画像返回时才自动恢复聊天状态
+                if (fromProfile && !isExpired && chatState.messageHistory && chatState.messageHistory.length > 0) {
+                    console.log('Restoring chat interface from profile...');
+                    
+                    // 恢复会话ID
+                    if (chatState.sessionId) {
+                        this.currentSessionId = chatState.sessionId;
+                        const sessionIdElement = document.getElementById('sessionId');
+                        if (sessionIdElement) {
+                            sessionIdElement.textContent = chatState.sessionId.substring(0, 8) + '...';
+                        }
+                    }
+                    
+                    // 恢复消息历史
+                    this.messageHistory = chatState.messageHistory;
+                    
+                    // 切换到聊天界面（不添加欢迎消息）
+                    this.switchToChatInterfaceWithoutWelcome();
+                    
+                    // 恢复消息显示
+                    setTimeout(() => {
+                        this.restoreMessages();
+                    }, 600);
+                    
+                    // 清除URL参数
+                    const newUrl = window.location.pathname;
+                    window.history.replaceState({}, document.title, newUrl);
+                } else {
+                    // 其他情况下显示欢迎界面
+                    console.log('Showing welcome interface...');
+                    this.showWelcomeInterface();
+                    
+                    // 如果状态过期，清除它
+                    if (isExpired) {
+                        console.log('Chat state expired, clearing...');
+                        localStorage.removeItem('chatState');
+                    }
+                }
+            } else {
+                // 没有保存的状态，显示欢迎界面
+                console.log('No saved state, showing welcome interface...');
+                this.showWelcomeInterface();
+            }
+        } catch (error) {
+            console.error('Failed to restore chat state:', error);
+            localStorage.removeItem('chatState');
+            this.showWelcomeInterface();
+        }
+    }
+
+    // 显示欢迎界面
+    showWelcomeInterface() {
+        const welcomeScreen = document.getElementById('welcomeScreen');
+        const chatContainer = document.getElementById('chatContainer');
         
-        const ctx = canvas.getContext('2d');
-        const entityCount = profile.graph_statistics?.entity_count || 0;
-        const relationCount = profile.graph_statistics?.relation_count || 0;
+        if (welcomeScreen && chatContainer) {
+            console.log('Displaying welcome screen...');
+            welcomeScreen.style.display = 'flex';
+            chatContainer.style.display = 'none';
+        }
+    }
+
+    // 切换到聊天界面（不添加欢迎消息）
+    switchToChatInterfaceWithoutWelcome() {
+        const welcomeScreen = document.getElementById('welcomeScreen');
+        const chatContainer = document.getElementById('chatContainer');
         
-        // 清空画布
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        if (welcomeScreen && chatContainer) {
+            // 直接切换界面，不添加欢迎消息
+            welcomeScreen.style.display = 'none';
+            chatContainer.style.display = 'flex';
+            chatContainer.style.opacity = '1';
+            chatContainer.style.transform = 'translateY(0)';
+        }
+    }
+
+    // 恢复消息显示
+    restoreMessages() {
+        const chatMessages = document.getElementById('chatMessages');
+        if (chatMessages && this.messageHistory.length > 0) {
+            // 清空现有消息
+            chatMessages.innerHTML = '';
+            
+            // 重新添加所有消息
+            this.messageHistory.forEach(msg => {
+                this.addMessage(msg.content, msg.type, false); // false表示不保存到历史记录
+            });
+            
+            // 滚动到底部
+            setTimeout(() => {
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }, 100);
+        }
+    }
+
+    // 清除聊天状态
+    clearChatState() {
+        localStorage.removeItem('chatState');
+        console.log('Chat state cleared');
+    }
+
+
+
+    // 历史对话管理方法
+    
+    // 创建新对话
+    createNewConversation() {
+        console.log('=== createNewConversation 方法被调用 ===');
+        console.log('当前消息历史长度:', this.messageHistory.length);
+        console.log('当前会话ID:', this.currentSessionId);
         
-        // 绘制柱状图
-        const barWidth = 60;
-        const barSpacing = 40;
-        const startX = 50;
-        const maxHeight = 200;
-        const maxValue = Math.max(entityCount, relationCount, 1);
+        try {
+            let savedTitle = '';
+            
+            // 保存当前对话到历史记录
+            if (this.messageHistory.length > 0) {
+                console.log('保存当前对话到历史记录...');
+                
+                // 获取当前对话的标题用于通知
+                const firstUserMessage = this.messageHistory.find(msg => msg.type === 'user');
+                if (firstUserMessage && firstUserMessage.content) {
+                    const cleanContent = firstUserMessage.content.trim().replace(/\s+/g, ' ');
+                    savedTitle = cleanContent.length > 5 ? cleanContent.substring(0, 5) : cleanContent;
+                }
+                
+                this.saveCurrentConversation();
+                
+                // 显示保存成功的通知
+                if (savedTitle) {
+                    this.showNotification(`对话"${savedTitle}"已保存到历史记录`, 'success');
+                } else {
+                    this.showNotification('当前对话已保存到历史记录', 'success');
+                }
+            }
+            
+            // 重置当前对话状态
+            console.log('重置对话状态...');
+            this.resetConversation();
+            
+            // 关闭历史对话模态框（如果打开）
+            console.log('关闭历史对话模态框...');
+            this.closeConversationHistoryModal();
+            
+            // 切换到聊天界面（不显示欢迎界面）
+            console.log('切换到聊天界面...');
+            this.switchToChatInterfaceWithoutWelcome();
+            
+            // 更新当前对话信息
+            console.log('更新当前对话信息...');
+            this.updateCurrentConversationInfo();
+            
+            // 刷新侧边栏对话列表
+            this.refreshSidebarConversationList();
+            
+            // 如果没有保存对话，显示新建对话的通知
+            if (this.messageHistory.length === 0 && !savedTitle) {
+                setTimeout(() => {
+                    this.showNotification('已创建新对话，开始您的学习之旅吧！', 'success');
+                }, 500);
+            }
+            
+            console.log('=== createNewConversation 方法执行完成 ===');
+        } catch (error) {
+            console.error('createNewConversation 方法执行出错:', error);
+            console.error('错误堆栈:', error.stack);
+            this.showNotification('创建新对话失败，请重试', 'error');
+        }
+    }
+    
+    // 保存当前对话到历史记录
+    saveCurrentConversation() {
+        if (this.messageHistory.length === 0) return;
         
-        // 实体数量柱状图
-        const entityHeight = (entityCount / maxValue) * maxHeight;
-        ctx.fillStyle = '#007bff';
-        ctx.fillRect(startX, canvas.height - 50 - entityHeight, barWidth, entityHeight);
+        try {
+            const conversations = this.getConversationHistory();
+            const conversationId = this.currentSessionId || this.generateSessionId();
+            
+            // 获取对话标题（使用第一条用户消息的前5个字符或默认标题）
+            const firstUserMessage = this.messageHistory.find(msg => msg.type === 'user');
+            let title = '新对话';
+            
+            if (firstUserMessage && firstUserMessage.content) {
+                // 移除多余的空格和换行符
+                const cleanContent = firstUserMessage.content.trim().replace(/\s+/g, ' ');
+                if (cleanContent.length > 0) {
+                    // 取前5个字符，如果不足5个字符则取全部
+                    title = cleanContent.length > 5 ? cleanContent.substring(0, 5) : cleanContent;
+                }
+            }
+            
+            const conversation = {
+                id: conversationId,
+                title: title,
+                messages: [...this.messageHistory],
+                timestamp: Date.now(),
+                messageCount: this.messageHistory.length,
+                lastMessage: this.messageHistory[this.messageHistory.length - 1]?.content || ''
+            };
+            
+            // 检查是否已存在相同ID的对话，如果存在则更新
+            const existingIndex = conversations.findIndex(conv => conv.id === conversationId);
+            if (existingIndex !== -1) {
+                conversations[existingIndex] = conversation;
+            } else {
+                conversations.unshift(conversation); // 添加到开头
+            }
+            
+            // 限制历史记录数量（最多保存50个对话）
+            if (conversations.length > 50) {
+                conversations.splice(50);
+            }
+            
+            localStorage.setItem('conversationHistory', JSON.stringify(conversations));
+            console.log('Conversation saved:', conversation);
+            
+            // 刷新侧边栏对话列表
+            this.refreshSidebarConversationList();
+        } catch (error) {
+            console.error('Failed to save conversation:', error);
+        }
+    }
+    
+    // 获取对话历史记录
+    getConversationHistory() {
+        try {
+            const history = localStorage.getItem('conversationHistory');
+            return history ? JSON.parse(history) : [];
+        } catch (error) {
+            console.error('Failed to get conversation history:', error);
+            return [];
+        }
+    }
+    
+    // 重置对话状态
+    resetConversation() {
+        this.messageHistory = [];
+        this.currentSessionId = this.generateSessionId();
+        this.isProcessing = false;
+        this.currentWorkflowStep = 0;
         
-        // 关系数量柱状图
-        const relationHeight = (relationCount / maxValue) * maxHeight;
-        ctx.fillStyle = '#28a745';
-        ctx.fillRect(startX + barWidth + barSpacing, canvas.height - 50 - relationHeight, barWidth, relationHeight);
+        // 清空聊天界面
+        const chatMessages = document.getElementById('chatMessages');
+        if (chatMessages) {
+            chatMessages.innerHTML = '';
+        }
         
-        // 绘制标签
-        ctx.fillStyle = '#333';
-        ctx.font = '14px Arial';
-        ctx.textAlign = 'center';
-        ctx.fillText('实体', startX + barWidth/2, canvas.height - 20);
-        ctx.fillText('关系', startX + barWidth + barSpacing + barWidth/2, canvas.height - 20);
+        // 重置进度条
+        this.updateLearningProgress(0, 6);
         
-        // 绘制数值
-        ctx.fillText(entityCount.toString(), startX + barWidth/2, canvas.height - 50 - entityHeight - 10);
-        ctx.fillText(relationCount.toString(), startX + barWidth + barSpacing + barWidth/2, canvas.height - 50 - relationHeight - 10);
+        // 清除聊天状态
+        this.clearChatState();
+        
+        // 更新会话ID显示
+        const sessionIdElement = document.getElementById('sessionId');
+        if (sessionIdElement) {
+            sessionIdElement.textContent = this.currentSessionId.substring(0, 8) + '...';
+        }
+    }
+    
+    // 显示对话历史模态框
+    showConversationHistory() {
+        const modal = document.getElementById('conversationHistoryModal');
+        if (modal) {
+            modal.style.display = 'block';
+            this.refreshConversationList();
+        }
+    }
+    
+    // 关闭对话历史模态框
+    closeConversationHistoryModal() {
+        const modal = document.getElementById('conversationHistoryModal');
+        if (modal) {
+            modal.style.display = 'none';
+        }
+    }
+    
+    // 刷新对话列表
+    refreshConversationList() {
+        const listContainer = document.getElementById('conversationList');
+        if (!listContainer) return;
+        
+        const conversations = this.getConversationHistory();
+        
+        if (conversations.length === 0) {
+            listContainer.innerHTML = `
+                <div class="empty-state">
+                    <p>暂无历史对话</p>
+                    <p>开始一个新对话来创建历史记录</p>
+                </div>
+            `;
+            return;
+        }
+        
+        listContainer.innerHTML = conversations.map(conv => {
+            const date = new Date(conv.timestamp);
+            const timeStr = this.formatTime(date);
+            
+            // 获取更好的预览内容
+            let preview = '';
+            if (conv.lastMessage) {
+                preview = conv.lastMessage.length > 60 ? 
+                    conv.lastMessage.substring(0, 60) + '...' : 
+                    conv.lastMessage;
+            } else {
+                // 如果没有最后消息，尝试从第一条用户消息获取
+                const firstUserMsg = conv.messages?.find(msg => msg.type === 'user');
+                if (firstUserMsg) {
+                    preview = firstUserMsg.content.length > 60 ? 
+                        firstUserMsg.content.substring(0, 60) + '...' : 
+                        firstUserMsg.content;
+                } else {
+                    preview = '暂无内容';
+                }
+            }
+            
+            return `
+                <div class="conversation-item" data-id="${conv.id}">
+                    <div class="conversation-header">
+                        <h4 class="conversation-title" title="${conv.title}">${conv.title}</h4>
+                        <div class="conversation-actions">
+                            <button class="action-btn load-btn" onclick="multiAgentInterface.loadConversation('${conv.id}')" title="加载对话">
+                                📂 加载
+                            </button>
+                            <button class="action-btn delete-btn" onclick="multiAgentInterface.deleteConversation('${conv.id}')" title="删除对话">
+                                🗑️ 删除
+                            </button>
+                        </div>
+                    </div>
+                    <div class="conversation-meta">
+                        <span class="conversation-id">ID: ${conv.id.substring(0, 8)}...</span>
+                        <span class="conversation-time">${timeStr}</span>
+                    </div>
+                    <div class="conversation-preview" title="${preview}">${preview}</div>
+                    <div class="conversation-stats">
+                        <span class="message-count">${conv.messageCount} 条消息</span>
+                        <span class="conversation-status">📝 历史对话</span>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    // 刷新侧边栏对话列表
+    refreshSidebarConversationList() {
+        const listContainer = document.getElementById('sidebarConversationList');
+        if (!listContainer) return;
+        
+        const conversations = this.getConversationHistory();
+        
+        if (conversations.length === 0) {
+            listContainer.innerHTML = `
+                <div class="empty-state" style="text-align: center; color: var(--text-muted); font-size: 0.8rem; padding: 10px;">
+                    暂无历史对话
+                </div>
+            `;
+            return;
+        }
+        
+        listContainer.innerHTML = conversations.map(conv => {
+            const date = new Date(conv.timestamp);
+            const timeStr = this.formatTime(date);
+            
+            // 获取对话预览（第一条用户消息的前30个字符）
+            let preview = '';
+            if (conv.lastMessage) {
+                preview = conv.lastMessage.length > 30 ? 
+                    conv.lastMessage.substring(0, 30) + '...' : 
+                    conv.lastMessage;
+            } else {
+                const firstUserMsg = conv.messages?.find(msg => msg.type === 'user');
+                if (firstUserMsg) {
+                    preview = firstUserMsg.content.length > 30 ? 
+                        firstUserMsg.content.substring(0, 30) + '...' : 
+                        firstUserMsg.content;
+                } else {
+                    preview = '暂无内容';
+                }
+            }
+            
+            // 检查是否为当前对话
+            const isActive = conv.id === this.currentSessionId ? 'active' : '';
+            
+            return `
+                <div class="sidebar-conversation-item ${isActive}" data-id="${conv.id}" onclick="multiAgentInterface.loadConversation('${conv.id}')">
+                    <div class="sidebar-conversation-title">${conv.title}</div>
+                    <div class="sidebar-conversation-meta">
+                        <span>${timeStr}</span>
+                        <span>${conv.messageCount} 条</span>
+                    </div>
+                    <div class="sidebar-conversation-preview">${preview}</div>
+                    <div class="sidebar-conversation-actions">
+                        <button class="sidebar-action-btn sidebar-delete-btn" onclick="event.stopPropagation(); multiAgentInterface.deleteConversation('${conv.id}')" title="删除对话">
+                            🗑️ 删除
+                        </button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+    
+    // 加载指定对话
+    loadConversation(conversationId) {
+        try {
+            const conversations = this.getConversationHistory();
+            const conversation = conversations.find(conv => conv.id === conversationId);
+            
+            if (!conversation) {
+                this.showNotification('对话不存在', 'error');
+                return;
+            }
+            
+            // 保存当前对话（如果有内容）
+            if (this.messageHistory.length > 0) {
+                console.log('保存当前对话...');
+                this.saveCurrentConversation();
+            }
+            
+            // 加载选中的对话
+            console.log('加载历史对话:', conversation.title);
+            this.messageHistory = [...conversation.messages];
+            this.currentSessionId = conversation.id;
+            
+            // 更新会话ID显示
+            const sessionIdElement = document.getElementById('sessionId');
+            if (sessionIdElement) {
+                sessionIdElement.textContent = this.currentSessionId.substring(0, 8) + '...';
+            }
+            
+            // 切换到聊天界面
+            this.switchToChatInterfaceWithoutWelcome();
+            
+            // 恢复消息显示
+            setTimeout(() => {
+                this.restoreMessages();
+                
+                // 滚动到聊天区域底部
+                const chatMessages = document.getElementById('chatMessages');
+                if (chatMessages) {
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                }
+            }, 100);
+            
+            // 更新当前对话信息
+            this.updateCurrentConversationInfo();
+            
+            // 刷新侧边栏对话列表（更新活跃状态）
+            this.refreshSidebarConversationList();
+            
+            // 关闭模态框
+            this.closeConversationHistoryModal();
+            
+            // 显示加载成功的通知
+            this.showNotification(`已加载对话"${conversation.title}"`, 'success');
+            
+            console.log('对话加载完成，消息数量:', this.messageHistory.length);
+        } catch (error) {
+            console.error('Failed to load conversation:', error);
+            this.showNotification('加载对话失败，请重试', 'error');
+        }
+    }
+    
+    // 删除指定对话
+    deleteConversation(conversationId) {
+        if (!confirm('确定要删除这个对话吗？此操作无法撤销。')) {
+            return;
+        }
+        
+        try {
+            const conversations = this.getConversationHistory();
+            const filteredConversations = conversations.filter(conv => conv.id !== conversationId);
+            
+            localStorage.setItem('conversationHistory', JSON.stringify(filteredConversations));
+            this.refreshConversationList();
+            this.refreshSidebarConversationList();
+            this.showNotification('对话已删除', 'success');
+        } catch (error) {
+            console.error('Failed to delete conversation:', error);
+            this.showNotification('删除对话失败', 'error');
+        }
+    }
+    
+    // 更新当前对话信息显示
+    updateCurrentConversationInfo() {
+        // 只更新会话ID显示，因为当前对话信息区域已被移除
+        const sessionIdElement = document.getElementById('sessionId');
+        if (sessionIdElement) {
+            sessionIdElement.textContent = this.currentSessionId.substring(0, 8) + '...';
+        }
+    }
+    
+    // 格式化时间显示
+    formatTime(date) {
+        const now = new Date();
+        const diff = now - date;
+        
+        if (diff < 60000) { // 1分钟内
+            return '刚刚';
+        } else if (diff < 3600000) { // 1小时内
+            return Math.floor(diff / 60000) + '分钟前';
+        } else if (diff < 86400000) { // 24小时内
+            return Math.floor(diff / 3600000) + '小时前';
+        } else if (diff < 604800000) { // 7天内
+            return Math.floor(diff / 86400000) + '天前';
+        } else {
+            return date.toLocaleDateString('zh-CN');
+        }
     }
 
     // Cleanup method
@@ -1583,7 +2576,34 @@ class MultiAgentInterface {
 let multiAgentInterface;
 
 document.addEventListener('DOMContentLoaded', function() {
-    multiAgentInterface = new MultiAgentInterface();
+    console.log('=== DOM 内容已加载 ===');
+    console.log('开始初始化 MultiAgentInterface...');
+    
+    try {
+        multiAgentInterface = new MultiAgentInterface();
+        console.log('MultiAgentInterface 初始化成功');
+        console.log('multiAgentInterface 对象:', multiAgentInterface);
+    } catch (error) {
+        console.error('MultiAgentInterface 初始化失败:', error);
+        console.error('错误堆栈:', error.stack);
+    }
+    
+    // 检查URL参数中是否有初始问题
+    const urlParams = new URLSearchParams(window.location.search);
+    const initialQuestion = urlParams.get('question');
+    
+    if (initialQuestion) {
+        // 等待界面完全加载后自动填入问题到欢迎界面
+        setTimeout(() => {
+            const welcomeInput = document.getElementById('welcomeMessageInput');
+            if (welcomeInput) {
+                welcomeInput.value = decodeURIComponent(initialQuestion);
+                // 可选：自动聚焦到输入框
+                welcomeInput.focus();
+                console.log('Initial question loaded from URL:', initialQuestion);
+            }
+        }, 500);
+    }
 });
 
 // Cleanup on page unload

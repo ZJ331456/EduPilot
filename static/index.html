@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI学习伙伴 - 智能学习助手</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            color: #333;
+        }
+
+        .header {
+            padding: 20px;
+            text-align: center;
+            color: white;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .hero-section {
+            text-align: center;
+            margin-bottom: 60px;
+            color: white;
+        }
+
+        .hero-title {
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            line-height: 1.2;
+        }
+
+        .hero-subtitle {
+            font-size: 20px;
+            opacity: 0.9;
+            margin-bottom: 30px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .cta-button {
+            background: white;
+            color: #667eea;
+            padding: 16px 32px;
+            border: none;
+            border-radius: 25px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            width: 100%;
+            max-width: 1400px;
+            margin-bottom: 60px;
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            animation: shimmer 0.8s ease-in-out;
+            box-shadow: 0 12px 35px rgba(102, 126, 234, 0.3);
+        }
+
+        @keyframes shimmer {
+            0% {
+                box-shadow: 0 12px 35px rgba(102, 126, 234, 0.3);
+            }
+            25% {
+                box-shadow: 0 12px 35px rgba(102, 126, 234, 0.6), 0 0 20px rgba(102, 126, 234, 0.4);
+            }
+            50% {
+                box-shadow: 0 12px 35px rgba(102, 126, 234, 0.8), 0 0 30px rgba(102, 126, 234, 0.6);
+            }
+            75% {
+                box-shadow: 0 12px 35px rgba(102, 126, 234, 0.6), 0 0 20px rgba(102, 126, 234, 0.4);
+            }
+            100% {
+                box-shadow: 0 12px 35px rgba(102, 126, 234, 0.3);
+            }
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transform: rotate(45deg);
+            transition: all 0.6s ease;
+            opacity: 0;
+        }
+
+        .feature-card:hover::before {
+            animation: shine 0.8s ease-in-out;
+        }
+
+        @keyframes shine {
+            0% {
+                opacity: 0;
+                transform: translateX(-100%) translateY(-100%) rotate(45deg);
+            }
+            50% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+                transform: translateX(100%) translateY(100%) rotate(45deg);
+            }
+        }
+
+        .feature-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        .feature-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .feature-description {
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .examples-section {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 40px 0;
+            border-radius: 15px;
+            width: 100vw;
+            margin-left: calc(-50vw + 50%);
+            margin-right: calc(-50vw + 50%);
+            margin-bottom: 40px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            overflow: hidden;
+            box-sizing: border-box;
+        }
+
+        .examples-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 30px;
+            text-align: center;
+            color: #333;
+            padding: 0 40px;
+        }
+
+        .scrolling-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            height: 300px;
+            overflow: hidden;
+        }
+
+        .scrolling-row {
+            display: flex;
+            gap: 20px;
+            animation-duration: 30s;
+            animation-timing-function: linear;
+            animation-iteration-count: infinite;
+            white-space: nowrap;
+        }
+
+        .scrolling-row:nth-child(1) {
+            animation-name: scrollRight;
+        }
+
+        .scrolling-row:nth-child(2) {
+            animation-name: scrollLeft;
+        }
+
+        .scrolling-row:nth-child(3) {
+            animation-name: scrollRight;
+        }
+
+        @keyframes scrollRight {
+            0% {
+                transform: translateX(-100%);
+            }
+            100% {
+                transform: translateX(100%);
+            }
+        }
+
+        @keyframes scrollLeft {
+            0% {
+                transform: translateX(100%);
+            }
+            100% {
+                transform: translateX(-100%);
+            }
+        }
+
+        .scrolling-row:hover {
+            animation-play-state: paused;
+        }
+
+        .example-item {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 300px;
+            flex-shrink: 0;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            border: none;
+        }
+
+        .example-item:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .example-text {
+            color: white;
+            font-size: 14px;
+            line-height: 1.5;
+            font-weight: 500;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 14px;
+        }
+
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 36px;
+            }
+            
+            .hero-subtitle {
+                font-size: 18px;
+            }
+            
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .examples-section {
+                padding: 20px;
+                max-width: 100%;
+            }
+            
+            .scrolling-container {
+                height: 250px;
+            }
+            
+            .example-item {
+                min-width: 250px;
+                padding: 15px 20px;
+            }
+            
+            .example-text {
+                font-size: 13px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">🤖 AI学习助手</div>
+    </div>
+
+    <div class="container">
+        <div class="hero-section">
+            <h1 class="hero-title">获取答案。寻找灵感。提高工作效率。</h1>
+            <p class="hero-subtitle">基于先进的多智能体技术，融合苏格拉底式教学法，为您提供个性化的学习体验。</p>
+            <a href="/static/multi_agent_interface.html" class="cta-button">开始学习 →</a>
+        </div>
+
+        <div class="features-grid">
+            <div class="feature-card">
+                <span class="feature-icon">🔍</span>
+                <h3 class="feature-title">查询解释器</h3>
+                <p class="feature-description">智能分析您的学习需求和问题意图</p>
+            </div>
+            <div class="feature-card">
+                <span class="feature-icon">📚</span>
+                <h3 class="feature-title">知识检索器</h3>
+                <p class="feature-description">从海量知识库中精准检索相关信息</p>
+            </div>
+            <div class="feature-card">
+                <span class="feature-icon">🤔</span>
+                <h3 class="feature-title">苏格拉底引导者</h3>
+                <p class="feature-description">通过启发式问题引导深度思考</p>
+            </div>
+            <div class="feature-card">
+                <span class="feature-icon">📋</span>
+                <h3 class="feature-title">规划器</h3>
+                <p class="feature-description">制定个性化的学习路径和计划</p>
+            </div>
+            <div class="feature-card">
+                <span class="feature-icon">💬</span>
+                <h3 class="feature-title">执行器</h3>
+                <p class="feature-description">执行学习计划并提供精准回答</p>
+            </div>
+            <div class="feature-card">
+                <span class="feature-icon">📈</span>
+                <h3 class="feature-title">学习器</h3>
+                <p class="feature-description">分析学习效果并优化学习体验</p>
+            </div>
+        </div>
+
+        <div class="examples-section">
+            <h2 class="examples-title">💡 探索学习主题</h2>
+            <div class="scrolling-container">
+                <!-- 第一行：向右滚动 -->
+                <div class="scrolling-row">
+                    <div class="example-item" onclick="startLearning('什么是机器学习？它的基本原理是什么？')">
+                        <div class="example-text">🤖 什么是机器学习？它的基本原理是什么？</div>
+                    </div>
+                    <div class="example-item" onclick="startLearning('请解释一下量子计算的工作原理')">
+                        <div class="example-text">⚛️ 请解释一下量子计算的工作原理</div>
+                    </div>
+                    <div class="example-item" onclick="startLearning('如何提高编程技能？有什么好的学习方法？')">
+                        <div class="example-text">💻 如何提高编程技能？有什么好的学习方法？</div>
+                    </div>
+                    <div class="example-item" onclick="startLearning('深度学习和传统机器学习有什么区别？')">
+                        <div class="example-text">🧠 深度学习和传统机器学习有什么区别？</div>
+                    </div>
+                    <div class="example-item" onclick="startLearning('什么是神经网络？它是如何工作的？')">
+                        <div class="example-text">🕸️ 什么是神经网络？它是如何工作的？</div>
+                    </div>
+                    <div class="example-item" onclick="startLearning('云计算的优势和应用场景有哪些？')">
+                        <div class="example-text">☁️ 云计算的优势和应用场景有哪些？</div>
+                    </div>
+                    <div class="example-item" onclick="startLearning('什么是自然语言处理？它有哪些应用？')">
+                        <div class="example-text">🗣️ 什么是自然语言处理？它有哪些应用？</div>
+                    </div>
+                    <div class="example-item" onclick="startLearning('计算机视觉技术的发展和应用领域')">
+                        <div class="example-text">👁️ 计算机视觉技术的发展和应用领域</div>
+                    </div>
+                    <div class="example-item" onclick="startLearning('什么是强化学习？它与监督学习有什么区别？')">
+                        <div class="example-text">🎯 什么是强化学习？它与监督学习有什么区别？</div>
+                    </div>
+                    <div class="example-item" onclick="startLearning('边缘计算与云计算的区别和优势')">
+                        <div class="example-text">📡 边缘计算与云计算的区别和优势</div>
+                    </div>
+                </div>
+                
+                <!-- 第二行：向左滚动 -->
+                <div class="scrolling-row">
+                    <div class="example-item" onclick="startLearning('数据结构中的树和图有什么区别？')">
+                        <div class="example-text">🌳 数据结构中的树和图有什么区别？</div>
+                    </div>
+                    <div class="example-item" onclick="startLearning('人工智能的发展历程是怎样的？')">
+                        <div class="example-text">🚀 人工智能的发展历程是怎样的？</div>
+                    </div>
+                    <div class="example-item" onclick="startLearning('区块链技术的核心概念和应用场景')">
+                        <div class="example-text">⛓️ 区块链技术的核心概念和应用场景</div>
+                    </div>
+                    <div class="example-item" onclick="startLearning('什么是大数据？如何处理和分析大数据？')">
+                        <div class="example-text">📊 什么是大数据？如何处理和分析大数据？</div>
+                    </div>
+                    <div class="example-item" onclick="startLearning('网络安全的基本原理和防护措施')">
+                        <div class="example-text">🔒 网络安全的基本原理和防护措施</div>
+                    </div>
+                    <div class="example-item" onclick="startLearning('物联网技术的发展趋势和应用前景')">
+                        <div class="example-text">🌐 物联网技术的发展趋势和应用前景</div>
+                    </div>
+                    <div class="example-item" onclick="startLearning('什么是DevOps？它如何改善软件开发流程？')">
+                        <div class="example-text">🔧 什么是DevOps？它如何改善软件开发流程？</div>
+                    </div>
+                    <div class="example-item" onclick="startLearning('微服务架构的优势和挑战')">
+                        <div class="example-text">🏗️ 微服务架构的优势和挑战</div>
+                    </div>
+                    <div class="example-item" onclick="startLearning('容器化技术Docker的原理和应用')">
+                        <div class="example-text">📦 容器化技术Docker的原理和应用</div>
+                    </div>
+                    <div class="example-item" onclick="startLearning('Kubernetes集群管理和编排技术')">
+                        <div class="example-text">⚙️ Kubernetes集群管理和编排技术</div>
+                    </div>
+                    <div class="example-item" onclick="startLearning('什么是API？RESTful API设计原则')">
+                        <div class="example-text">🔌 什么是API？RESTful API设计原则</div>
+                    </div>
+                </div>
+                
+                <!-- 第三行：向右滚动 -->
+                <div class="scrolling-row">
+                    <div class="example-item" onclick="startLearning('算法复杂度分析的基本方法')">
+                        <div class="example-text">⚡ 算法复杂度分析的基本方法</div>
+                    </div>
+                    <div class="example-item" onclick="startLearning('数据库设计的基本原则和最佳实践')">
+                        <div class="example-text">🗄️ 数据库设计的基本原则和最佳实践</div>
+                    </div>
+                    <div class="example-item" onclick="startLearning('软件工程的开发流程和管理方法')">
+                        <div class="example-text">🛠️ 软件工程的开发流程和管理方法</div>
+                    </div>
+                    <div class="example-item" onclick="startLearning('前端开发的技术栈和发展趋势')">
+                        <div class="example-text">🎨 前端开发的技术栈和发展趋势</div>
+                    </div>
+                    <div class="example-item" onclick="startLearning('移动应用开发的平台选择和技术对比')">
+                        <div class="example-text">📱 移动应用开发的平台选择和技术对比</div>
+                    </div>
+                    <div class="example-item" onclick="startLearning('人机交互设计的原理和实践方法')">
+                        <div class="example-text">👆 人机交互设计的原理和实践方法</div>
+                    </div>
+                    <div class="example-item" onclick="startLearning('什么是敏捷开发？Scrum框架如何运作？')">
+                        <div class="example-text">🏃 什么是敏捷开发？Scrum框架如何运作？</div>
+                    </div>
+                    <div class="example-item" onclick="startLearning('版本控制系统Git的工作原理和最佳实践')">
+                        <div class="example-text">📝 版本控制系统Git的工作原理和最佳实践</div>
+                    </div>
+                    <div class="example-item" onclick="startLearning('什么是持续集成和持续部署(CI/CD)？')">
+                        <div class="example-text">🔄 什么是持续集成和持续部署(CI/CD)？</div>
+                    </div>
+                    <div class="example-item" onclick="startLearning('测试驱动开发(TDD)的原理和实践')">
+                        <div class="example-text">🧪 测试驱动开发(TDD)的原理和实践</div>
+                    </div>
+                    <div class="example-item" onclick="startLearning('代码重构的技巧和最佳实践')">
+                        <div class="example-text">🔨 代码重构的技巧和最佳实践</div>
+                    </div>
+                    <div class="example-item" onclick="startLearning('设计模式在软件开发中的应用')">
+                        <div class="example-text">🎭 设计模式在软件开发中的应用</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>与您一起写作、学习、头脑风暴和探索想法</p>
+    </div>
+
+    <script>
+        function startLearning(question) {
+            // 将问题存储到sessionStorage，以便在主界面中使用
+            sessionStorage.setItem('initialQuestion', question);
+            // 跳转到主界面
+            window.location.href = '/static/multi_agent_interface.html';
+        }
+
+        // 添加一些交互效果
+        document.addEventListener('DOMContentLoaded', function() {
+            // 为特性卡片添加动画
+            const cards = document.querySelectorAll('.feature-card');
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                setTimeout(() => {
+                    card.style.transition = 'all 0.6s ease';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 200);
+            });
+
+            // 为示例项目添加动画
+            const examples = document.querySelectorAll('.example-item');
+            examples.forEach((example, index) => {
+                example.style.opacity = '0';
+                example.style.transform = 'translateX(-20px)';
+                setTimeout(() => {
+                    example.style.transition = 'all 0.6s ease';
+                    example.style.opacity = '1';
+                    example.style.transform = 'translateX(0)';
+                }, 800 + index * 100);
+            });
+        });
+    </script>
+</body>
+</html>
