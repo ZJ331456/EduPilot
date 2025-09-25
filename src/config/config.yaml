@@ -84,7 +84,7 @@ llm:
   ollama:
     enabled: true
     base_url: "http://localhost:11434"
-    default_model: "qwen2.5:latest"  # 本地对话模型（备用）
+    default_model: "qwen2.5:ctx32k"  # 本地对话模型（备用）
     timeout: 30
     max_retries: 3
     # 嵌入模型配置（知识库检索专用）
@@ -106,7 +106,7 @@ llm:
 # 知识库配置
 knowledge_base:
   # 知识库根目录
-  root_dir: "../concept_knowledge_bases"
+  root_dir: "concept_knowledge_bases"
   
   # 缓存配置
   cache:

@@ -1,0 +1,1077 @@
+{
+  "基础配置": [
+    {
+      "query_id": "Q001",
+      "user_id": "user_081",
+      "query": "什么是机器学习？",
+      "response": "这是基础配置对查询'什么是机器学习？'的模拟响应。",
+      "response_time": 0.1037912368774414,
+      "config": "基础配置",
+      "quality_scores": {
+        "accuracy": 3.34,
+        "completeness": 3.77,
+        "explanation_quality": 3.8,
+        "learning_value": 3.75
+      },
+      "timestamp": "2025-08-30T05:43:58.267329",
+      "success": true
+    },
+    {
+      "query_id": "Q002",
+      "user_id": "user_017",
+      "query": "解释深度学习的基本原理",
+      "response": "这是基础配置对查询'解释深度学习的基本原理'的模拟响应。",
+      "response_time": 0.10808897018432617,
+      "config": "基础配置",
+      "quality_scores": {
+        "accuracy": 3.9,
+        "completeness": 4.17,
+        "explanation_quality": 4.53,
+        "learning_value": 3.41
+      },
+      "timestamp": "2025-08-30T05:43:58.482560",
+      "success": true
+    },
+    {
+      "query_id": "Q003",
+      "user_id": "user_060",
+      "query": "比较监督学习和无监督学习的区别",
+      "response": "这是基础配置对查询'比较监督学习和无监督学习的区别'的模拟响应。",
+      "response_time": 0.10800695419311523,
+      "config": "基础配置",
+      "quality_scores": {
+        "accuracy": 3.91,
+        "completeness": 4.32,
+        "explanation_quality": 3.53,
+        "learning_value": 3.01
+      },
+      "timestamp": "2025-08-30T05:43:58.699803",
+      "success": true
+    },
+    {
+      "query_id": "Q004",
+      "user_id": "user_019",
+      "query": "如何构建一个神经网络？",
+      "response": "这是基础配置对查询'如何构建一个神经网络？'的模拟响应。",
+      "response_time": 0.1072850227355957,
+      "config": "基础配置",
+      "quality_scores": {
+        "accuracy": 3.52,
+        "completeness": 3.74,
+        "explanation_quality": 3.8,
+        "learning_value": 4.45
+      },
+      "timestamp": "2025-08-30T05:43:58.915470",
+      "success": true
+    },
+    {
+      "query_id": "Q005",
+      "user_id": "user_074",
+      "query": "分析机器学习在医疗领域的应用",
+      "response": "这是基础配置对查询'分析机器学习在医疗领域的应用'的模拟响应。",
+      "response_time": 0.10698199272155762,
+      "config": "基础配置",
+      "quality_scores": {
+        "accuracy": 4.45,
+        "completeness": 3.7,
+        "explanation_quality": 3.75,
+        "learning_value": 4.52
+      },
+      "timestamp": "2025-08-30T05:43:59.130431",
+      "success": true
+    },
+    {
+      "query_id": "Q006",
+      "user_id": "user_064",
+      "query": "使用Python实现K-means聚类算法",
+      "response": "这是基础配置对查询'使用Python实现K-means聚类算法'的模拟响应。",
+      "response_time": 0.10703635215759277,
+      "config": "基础配置",
+      "quality_scores": {
+        "accuracy": 4.37,
+        "completeness": 4.25,
+        "explanation_quality": 4.26,
+        "learning_value": 3.03
+      },
+      "timestamp": "2025-08-30T05:43:59.344515",
+      "success": true
+    },
+    {
+      "query_id": "Q007",
+      "user_id": "user_041",
+      "query": "如何优化神经网络训练速度？",
+      "response": "这是基础配置对查询'如何优化神经网络训练速度？'的模拟响应。",
+      "response_time": 0.10696530342102051,
+      "config": "基础配置",
+      "quality_scores": {
+        "accuracy": 4.44,
+        "completeness": 3.86,
+        "explanation_quality": 4.41,
+        "learning_value": 4.22
+      },
+      "timestamp": "2025-08-30T05:43:59.561462",
+      "success": true
+    },
+    {
+      "query_id": "Q008",
+      "user_id": "user_075",
+      "query": "解释注意力机制在NLP中的作用",
+      "response": "这是基础配置对查询'解释注意力机制在NLP中的作用'的模拟响应。",
+      "response_time": 0.10742306709289551,
+      "config": "基础配置",
+      "quality_scores": {
+        "accuracy": 3.97,
+        "completeness": 3.24,
+        "explanation_quality": 4.05,
+        "learning_value": 3.01
+      },
+      "timestamp": "2025-08-30T05:43:59.776486",
+      "success": true
+    },
+    {
+      "query_id": "Q009",
+      "user_id": "user_007",
+      "query": "设计一个推荐系统架构",
+      "response": "这是基础配置对查询'设计一个推荐系统架构'的模拟响应。",
+      "response_time": 0.10950779914855957,
+      "config": "基础配置",
+      "quality_scores": {
+        "accuracy": 3.89,
+        "completeness": 3.19,
+        "explanation_quality": 3.52,
+        "learning_value": 3.84
+      },
+      "timestamp": "2025-08-30T05:43:59.993258",
+      "success": true
+    },
+    {
+      "query_id": "Q010",
+      "user_id": "user_039",
+      "query": "如何评估机器学习模型的性能？",
+      "response": "这是基础配置对查询'如何评估机器学习模型的性能？'的模拟响应。",
+      "response_time": 0.10529065132141113,
+      "config": "基础配置",
+      "quality_scores": {
+        "accuracy": 4.05,
+        "completeness": 3.39,
+        "explanation_quality": 3.91,
+        "learning_value": 3.48
+      },
+      "timestamp": "2025-08-30T05:44:00.208500",
+      "success": true
+    },
+    {
+      "query_id": "Q011",
+      "user_id": "user_078",
+      "query": "解释强化学习在游戏AI中的应用",
+      "response": "这是基础配置对查询'解释强化学习在游戏AI中的应用'的模拟响应。",
+      "response_time": 0.10849928855895996,
+      "config": "基础配置",
+      "quality_scores": {
+        "accuracy": 4.39,
+        "completeness": 4.43,
+        "explanation_quality": 3.88,
+        "learning_value": 4.08
+      },
+      "timestamp": "2025-08-30T05:44:00.425700",
+      "success": true
+    },
+    {
+      "query_id": "Q012",
+      "user_id": "user_070",
+      "query": "分析大语言模型的发展趋势",
+      "response": "这是基础配置对查询'分析大语言模型的发展趋势'的模拟响应。",
+      "response_time": 0.1092519760131836,
+      "config": "基础配置",
+      "quality_scores": {
+        "accuracy": 3.65,
+        "completeness": 4.35,
+        "explanation_quality": 4.09,
+        "learning_value": 3.34
+      },
+      "timestamp": "2025-08-30T05:44:00.642459",
+      "success": true
+    },
+    {
+      "query_id": "Q013",
+      "user_id": "user_081",
+      "query": "机器学习如何改变金融行业？",
+      "response": "这是基础配置对查询'机器学习如何改变金融行业？'的模拟响应。",
+      "response_time": 0.10631728172302246,
+      "config": "基础配置",
+      "quality_scores": {
+        "accuracy": 4.59,
+        "completeness": 3.98,
+        "explanation_quality": 4.32,
+        "learning_value": 3.24
+      },
+      "timestamp": "2025-08-30T05:44:00.857147",
+      "success": true
+    },
+    {
+      "query_id": "Q014",
+      "user_id": "user_041",
+      "query": "AI在教育领域的创新应用",
+      "response": "这是基础配置对查询'AI在教育领域的创新应用'的模拟响应。",
+      "response_time": 0.10760951042175293,
+      "config": "基础配置",
+      "quality_scores": {
+        "accuracy": 4.04,
+        "completeness": 3.51,
+        "explanation_quality": 3.69,
+        "learning_value": 4.01
+      },
+      "timestamp": "2025-08-30T05:44:01.073112",
+      "success": true
+    },
+    {
+      "query_id": "Q015",
+      "user_id": "user_092",
+      "query": "讨论AI的伦理问题和解决方案",
+      "response": "这是基础配置对查询'讨论AI的伦理问题和解决方案'的模拟响应。",
+      "response_time": 0.1086125373840332,
+      "config": "基础配置",
+      "quality_scores": {
+        "accuracy": 4.76,
+        "completeness": 3.97,
+        "explanation_quality": 4.24,
+        "learning_value": 3.18
+      },
+      "timestamp": "2025-08-30T05:44:01.289242",
+      "success": true
+    },
+    {
+      "query_id": "Q016",
+      "user_id": "user_040",
+      "query": "预测未来10年AI技术的发展",
+      "response": "这是基础配置对查询'预测未来10年AI技术的发展'的模拟响应。",
+      "response_time": 0.10802650451660156,
+      "config": "基础配置",
+      "quality_scores": {
+        "accuracy": 4.63,
+        "completeness": 4.45,
+        "explanation_quality": 4.23,
+        "learning_value": 3.76
+      },
+      "timestamp": "2025-08-30T05:44:01.504549",
+      "success": true
+    }
+  ],
+  "标准配置": [
+    {
+      "query_id": "Q001",
+      "user_id": "user_081",
+      "query": "什么是机器学习？",
+      "response": "这是标准配置对查询'什么是机器学习？'的模拟响应。",
+      "response_time": 0.10734772682189941,
+      "config": "标准配置",
+      "quality_scores": {
+        "accuracy": 3.47,
+        "completeness": 3.75,
+        "explanation_quality": 4.09,
+        "learning_value": 3.04
+      },
+      "timestamp": "2025-08-30T05:44:01.719996",
+      "success": true
+    },
+    {
+      "query_id": "Q002",
+      "user_id": "user_017",
+      "query": "解释深度学习的基本原理",
+      "response": "这是标准配置对查询'解释深度学习的基本原理'的模拟响应。",
+      "response_time": 0.1085362434387207,
+      "config": "标准配置",
+      "quality_scores": {
+        "accuracy": 4.48,
+        "completeness": 3.69,
+        "explanation_quality": 4.41,
+        "learning_value": 3.2
+      },
+      "timestamp": "2025-08-30T05:44:01.935643",
+      "success": true
+    },
+    {
+      "query_id": "Q003",
+      "user_id": "user_060",
+      "query": "比较监督学习和无监督学习的区别",
+      "response": "这是标准配置对查询'比较监督学习和无监督学习的区别'的模拟响应。",
+      "response_time": 0.10924625396728516,
+      "config": "标准配置",
+      "quality_scores": {
+        "accuracy": 3.71,
+        "completeness": 4.29,
+        "explanation_quality": 3.4,
+        "learning_value": 2.99
+      },
+      "timestamp": "2025-08-30T05:44:02.153532",
+      "success": true
+    },
+    {
+      "query_id": "Q004",
+      "user_id": "user_019",
+      "query": "如何构建一个神经网络？",
+      "response": "这是标准配置对查询'如何构建一个神经网络？'的模拟响应。",
+      "response_time": 0.1070561408996582,
+      "config": "标准配置",
+      "quality_scores": {
+        "accuracy": 3.64,
+        "completeness": 3.52,
+        "explanation_quality": 4.61,
+        "learning_value": 4.59
+      },
+      "timestamp": "2025-08-30T05:44:02.369216",
+      "success": true
+    },
+    {
+      "query_id": "Q005",
+      "user_id": "user_074",
+      "query": "分析机器学习在医疗领域的应用",
+      "response": "这是标准配置对查询'分析机器学习在医疗领域的应用'的模拟响应。",
+      "response_time": 0.10836625099182129,
+      "config": "标准配置",
+      "quality_scores": {
+        "accuracy": 3.87,
+        "completeness": 3.18,
+        "explanation_quality": 3.61,
+        "learning_value": 3.03
+      },
+      "timestamp": "2025-08-30T05:44:02.585090",
+      "success": true
+    },
+    {
+      "query_id": "Q006",
+      "user_id": "user_064",
+      "query": "使用Python实现K-means聚类算法",
+      "response": "这是标准配置对查询'使用Python实现K-means聚类算法'的模拟响应。",
+      "response_time": 0.10824823379516602,
+      "config": "标准配置",
+      "quality_scores": {
+        "accuracy": 4.36,
+        "completeness": 3.54,
+        "explanation_quality": 4.2,
+        "learning_value": 4.56
+      },
+      "timestamp": "2025-08-30T05:44:02.800307",
+      "success": true
+    },
+    {
+      "query_id": "Q007",
+      "user_id": "user_041",
+      "query": "如何优化神经网络训练速度？",
+      "response": "这是标准配置对查询'如何优化神经网络训练速度？'的模拟响应。",
+      "response_time": 0.11040091514587402,
+      "config": "标准配置",
+      "quality_scores": {
+        "accuracy": 3.88,
+        "completeness": 4.17,
+        "explanation_quality": 4.31,
+        "learning_value": 3.34
+      },
+      "timestamp": "2025-08-30T05:44:03.018747",
+      "success": true
+    },
+    {
+      "query_id": "Q008",
+      "user_id": "user_075",
+      "query": "解释注意力机制在NLP中的作用",
+      "response": "这是标准配置对查询'解释注意力机制在NLP中的作用'的模拟响应。",
+      "response_time": 0.1097722053527832,
+      "config": "标准配置",
+      "quality_scores": {
+        "accuracy": 3.57,
+        "completeness": 3.17,
+        "explanation_quality": 4.14,
+        "learning_value": 4.25
+      },
+      "timestamp": "2025-08-30T05:44:03.236497",
+      "success": true
+    },
+    {
+      "query_id": "Q009",
+      "user_id": "user_007",
+      "query": "设计一个推荐系统架构",
+      "response": "这是标准配置对查询'设计一个推荐系统架构'的模拟响应。",
+      "response_time": 0.10690712928771973,
+      "config": "标准配置",
+      "quality_scores": {
+        "accuracy": 3.81,
+        "completeness": 3.99,
+        "explanation_quality": 3.52,
+        "learning_value": 4.39
+      },
+      "timestamp": "2025-08-30T05:44:03.451784",
+      "success": true
+    },
+    {
+      "query_id": "Q010",
+      "user_id": "user_039",
+      "query": "如何评估机器学习模型的性能？",
+      "response": "这是标准配置对查询'如何评估机器学习模型的性能？'的模拟响应。",
+      "response_time": 0.10973811149597168,
+      "config": "标准配置",
+      "quality_scores": {
+        "accuracy": 3.4,
+        "completeness": 4.11,
+        "explanation_quality": 3.86,
+        "learning_value": 3.21
+      },
+      "timestamp": "2025-08-30T05:44:03.669726",
+      "success": true
+    },
+    {
+      "query_id": "Q011",
+      "user_id": "user_078",
+      "query": "解释强化学习在游戏AI中的应用",
+      "response": "这是标准配置对查询'解释强化学习在游戏AI中的应用'的模拟响应。",
+      "response_time": 0.10732078552246094,
+      "config": "标准配置",
+      "quality_scores": {
+        "accuracy": 4.42,
+        "completeness": 3.36,
+        "explanation_quality": 4.39,
+        "learning_value": 3.84
+      },
+      "timestamp": "2025-08-30T05:44:03.885639",
+      "success": true
+    },
+    {
+      "query_id": "Q012",
+      "user_id": "user_070",
+      "query": "分析大语言模型的发展趋势",
+      "response": "这是标准配置对查询'分析大语言模型的发展趋势'的模拟响应。",
+      "response_time": 0.10849237442016602,
+      "config": "标准配置",
+      "quality_scores": {
+        "accuracy": 4.32,
+        "completeness": 3.76,
+        "explanation_quality": 4.28,
+        "learning_value": 3.53
+      },
+      "timestamp": "2025-08-30T05:44:04.102398",
+      "success": true
+    },
+    {
+      "query_id": "Q013",
+      "user_id": "user_081",
+      "query": "机器学习如何改变金融行业？",
+      "response": "这是标准配置对查询'机器学习如何改变金融行业？'的模拟响应。",
+      "response_time": 0.10823988914489746,
+      "config": "标准配置",
+      "quality_scores": {
+        "accuracy": 3.8,
+        "completeness": 3.95,
+        "explanation_quality": 3.67,
+        "learning_value": 4.1
+      },
+      "timestamp": "2025-08-30T05:44:04.318515",
+      "success": true
+    },
+    {
+      "query_id": "Q014",
+      "user_id": "user_041",
+      "query": "AI在教育领域的创新应用",
+      "response": "这是标准配置对查询'AI在教育领域的创新应用'的模拟响应。",
+      "response_time": 0.1075596809387207,
+      "config": "标准配置",
+      "quality_scores": {
+        "accuracy": 3.75,
+        "completeness": 3.93,
+        "explanation_quality": 3.94,
+        "learning_value": 3.74
+      },
+      "timestamp": "2025-08-30T05:44:04.533558",
+      "success": true
+    },
+    {
+      "query_id": "Q015",
+      "user_id": "user_092",
+      "query": "讨论AI的伦理问题和解决方案",
+      "response": "这是标准配置对查询'讨论AI的伦理问题和解决方案'的模拟响应。",
+      "response_time": 0.10802197456359863,
+      "config": "标准配置",
+      "quality_scores": {
+        "accuracy": 4.3,
+        "completeness": 3.44,
+        "explanation_quality": 4.35,
+        "learning_value": 4.04
+      },
+      "timestamp": "2025-08-30T05:44:04.749019",
+      "success": true
+    },
+    {
+      "query_id": "Q016",
+      "user_id": "user_040",
+      "query": "预测未来10年AI技术的发展",
+      "response": "这是标准配置对查询'预测未来10年AI技术的发展'的模拟响应。",
+      "response_time": 0.10770249366760254,
+      "config": "标准配置",
+      "quality_scores": {
+        "accuracy": 4.48,
+        "completeness": 4.44,
+        "explanation_quality": 4.01,
+        "learning_value": 3.69
+      },
+      "timestamp": "2025-08-30T05:44:04.965978",
+      "success": true
+    }
+  ],
+  "增强配置": [
+    {
+      "query_id": "Q001",
+      "user_id": "user_081",
+      "query": "什么是机器学习？",
+      "response": "这是增强配置对查询'什么是机器学习？'的模拟响应。",
+      "response_time": 0.10934829711914062,
+      "config": "增强配置",
+      "quality_scores": {
+        "accuracy": 4.02,
+        "completeness": 3.06,
+        "explanation_quality": 4.1,
+        "learning_value": 3.08
+      },
+      "timestamp": "2025-08-30T05:44:05.184358",
+      "success": true
+    },
+    {
+      "query_id": "Q002",
+      "user_id": "user_017",
+      "query": "解释深度学习的基本原理",
+      "response": "这是增强配置对查询'解释深度学习的基本原理'的模拟响应。",
+      "response_time": 0.10765433311462402,
+      "config": "增强配置",
+      "quality_scores": {
+        "accuracy": 3.52,
+        "completeness": 3.28,
+        "explanation_quality": 4.35,
+        "learning_value": 3.44
+      },
+      "timestamp": "2025-08-30T05:44:05.400258",
+      "success": true
+    },
+    {
+      "query_id": "Q003",
+      "user_id": "user_060",
+      "query": "比较监督学习和无监督学习的区别",
+      "response": "这是增强配置对查询'比较监督学习和无监督学习的区别'的模拟响应。",
+      "response_time": 0.10715651512145996,
+      "config": "增强配置",
+      "quality_scores": {
+        "accuracy": 4.08,
+        "completeness": 3.07,
+        "explanation_quality": 4.19,
+        "learning_value": 4.14
+      },
+      "timestamp": "2025-08-30T05:44:05.614655",
+      "success": true
+    },
+    {
+      "query_id": "Q004",
+      "user_id": "user_019",
+      "query": "如何构建一个神经网络？",
+      "response": "这是增强配置对查询'如何构建一个神经网络？'的模拟响应。",
+      "response_time": 0.10977053642272949,
+      "config": "增强配置",
+      "quality_scores": {
+        "accuracy": 3.5,
+        "completeness": 3.8,
+        "explanation_quality": 4.35,
+        "learning_value": 3.01
+      },
+      "timestamp": "2025-08-30T05:44:05.834027",
+      "success": true
+    },
+    {
+      "query_id": "Q005",
+      "user_id": "user_074",
+      "query": "分析机器学习在医疗领域的应用",
+      "response": "这是增强配置对查询'分析机器学习在医疗领域的应用'的模拟响应。",
+      "response_time": 0.10755753517150879,
+      "config": "增强配置",
+      "quality_scores": {
+        "accuracy": 3.94,
+        "completeness": 4.45,
+        "explanation_quality": 4.33,
+        "learning_value": 3.71
+      },
+      "timestamp": "2025-08-30T05:44:06.050979",
+      "success": true
+    },
+    {
+      "query_id": "Q006",
+      "user_id": "user_064",
+      "query": "使用Python实现K-means聚类算法",
+      "response": "这是增强配置对查询'使用Python实现K-means聚类算法'的模拟响应。",
+      "response_time": 0.10968613624572754,
+      "config": "增强配置",
+      "quality_scores": {
+        "accuracy": 3.76,
+        "completeness": 3.29,
+        "explanation_quality": 3.97,
+        "learning_value": 4.53
+      },
+      "timestamp": "2025-08-30T05:44:06.269332",
+      "success": true
+    },
+    {
+      "query_id": "Q007",
+      "user_id": "user_041",
+      "query": "如何优化神经网络训练速度？",
+      "response": "这是增强配置对查询'如何优化神经网络训练速度？'的模拟响应。",
+      "response_time": 0.10923337936401367,
+      "config": "增强配置",
+      "quality_scores": {
+        "accuracy": 3.54,
+        "completeness": 3.11,
+        "explanation_quality": 4.07,
+        "learning_value": 3.51
+      },
+      "timestamp": "2025-08-30T05:44:06.487154",
+      "success": true
+    },
+    {
+      "query_id": "Q008",
+      "user_id": "user_075",
+      "query": "解释注意力机制在NLP中的作用",
+      "response": "这是增强配置对查询'解释注意力机制在NLP中的作用'的模拟响应。",
+      "response_time": 0.10934782028198242,
+      "config": "增强配置",
+      "quality_scores": {
+        "accuracy": 4.58,
+        "completeness": 3.42,
+        "explanation_quality": 4.4,
+        "learning_value": 4.03
+      },
+      "timestamp": "2025-08-30T05:44:06.705802",
+      "success": true
+    },
+    {
+      "query_id": "Q009",
+      "user_id": "user_007",
+      "query": "设计一个推荐系统架构",
+      "response": "这是增强配置对查询'设计一个推荐系统架构'的模拟响应。",
+      "response_time": 0.10996103286743164,
+      "config": "增强配置",
+      "quality_scores": {
+        "accuracy": 3.91,
+        "completeness": 4.3,
+        "explanation_quality": 4.0,
+        "learning_value": 3.17
+      },
+      "timestamp": "2025-08-30T05:44:06.925121",
+      "success": true
+    },
+    {
+      "query_id": "Q010",
+      "user_id": "user_039",
+      "query": "如何评估机器学习模型的性能？",
+      "response": "这是增强配置对查询'如何评估机器学习模型的性能？'的模拟响应。",
+      "response_time": 0.10827827453613281,
+      "config": "增强配置",
+      "quality_scores": {
+        "accuracy": 4.52,
+        "completeness": 3.66,
+        "explanation_quality": 3.53,
+        "learning_value": 3.92
+      },
+      "timestamp": "2025-08-30T05:44:07.142906",
+      "success": true
+    },
+    {
+      "query_id": "Q011",
+      "user_id": "user_078",
+      "query": "解释强化学习在游戏AI中的应用",
+      "response": "这是增强配置对查询'解释强化学习在游戏AI中的应用'的模拟响应。",
+      "response_time": 0.1083984375,
+      "config": "增强配置",
+      "quality_scores": {
+        "accuracy": 4.71,
+        "completeness": 3.73,
+        "explanation_quality": 3.83,
+        "learning_value": 4.32
+      },
+      "timestamp": "2025-08-30T05:44:07.359962",
+      "success": true
+    },
+    {
+      "query_id": "Q012",
+      "user_id": "user_070",
+      "query": "分析大语言模型的发展趋势",
+      "response": "这是增强配置对查询'分析大语言模型的发展趋势'的模拟响应。",
+      "response_time": 0.10832619667053223,
+      "config": "增强配置",
+      "quality_scores": {
+        "accuracy": 4.08,
+        "completeness": 3.49,
+        "explanation_quality": 4.21,
+        "learning_value": 3.02
+      },
+      "timestamp": "2025-08-30T05:44:07.576210",
+      "success": true
+    },
+    {
+      "query_id": "Q013",
+      "user_id": "user_081",
+      "query": "机器学习如何改变金融行业？",
+      "response": "这是增强配置对查询'机器学习如何改变金融行业？'的模拟响应。",
+      "response_time": 0.10940051078796387,
+      "config": "增强配置",
+      "quality_scores": {
+        "accuracy": 3.62,
+        "completeness": 4.4,
+        "explanation_quality": 4.54,
+        "learning_value": 4.09
+      },
+      "timestamp": "2025-08-30T05:44:07.795204",
+      "success": true
+    },
+    {
+      "query_id": "Q014",
+      "user_id": "user_041",
+      "query": "AI在教育领域的创新应用",
+      "response": "这是增强配置对查询'AI在教育领域的创新应用'的模拟响应。",
+      "response_time": 0.1088252067565918,
+      "config": "增强配置",
+      "quality_scores": {
+        "accuracy": 3.95,
+        "completeness": 3.46,
+        "explanation_quality": 4.42,
+        "learning_value": 3.99
+      },
+      "timestamp": "2025-08-30T05:44:08.012350",
+      "success": true
+    },
+    {
+      "query_id": "Q015",
+      "user_id": "user_092",
+      "query": "讨论AI的伦理问题和解决方案",
+      "response": "这是增强配置对查询'讨论AI的伦理问题和解决方案'的模拟响应。",
+      "response_time": 0.10942316055297852,
+      "config": "增强配置",
+      "quality_scores": {
+        "accuracy": 4.18,
+        "completeness": 3.27,
+        "explanation_quality": 4.5,
+        "learning_value": 3.09
+      },
+      "timestamp": "2025-08-30T05:44:08.231827",
+      "success": true
+    },
+    {
+      "query_id": "Q016",
+      "user_id": "user_040",
+      "query": "预测未来10年AI技术的发展",
+      "response": "这是增强配置对查询'预测未来10年AI技术的发展'的模拟响应。",
+      "response_time": 0.10776376724243164,
+      "config": "增强配置",
+      "quality_scores": {
+        "accuracy": 3.98,
+        "completeness": 3.36,
+        "explanation_quality": 3.94,
+        "learning_value": 4.39
+      },
+      "timestamp": "2025-08-30T05:44:08.448314",
+      "success": true
+    }
+  ],
+  "专家配置": [
+    {
+      "query_id": "Q001",
+      "user_id": "user_081",
+      "query": "什么是机器学习？",
+      "response": "这是专家配置对查询'什么是机器学习？'的模拟响应。",
+      "response_time": 0.11017560958862305,
+      "config": "专家配置",
+      "quality_scores": {
+        "accuracy": 3.32,
+        "completeness": 4.07,
+        "explanation_quality": 3.85,
+        "learning_value": 3.56
+      },
+      "timestamp": "2025-08-30T05:44:08.666420",
+      "success": true
+    },
+    {
+      "query_id": "Q002",
+      "user_id": "user_017",
+      "query": "解释深度学习的基本原理",
+      "response": "这是专家配置对查询'解释深度学习的基本原理'的模拟响应。",
+      "response_time": 0.1085364818572998,
+      "config": "专家配置",
+      "quality_scores": {
+        "accuracy": 4.08,
+        "completeness": 3.74,
+        "explanation_quality": 4.05,
+        "learning_value": 3.96
+      },
+      "timestamp": "2025-08-30T05:44:08.885592",
+      "success": true
+    },
+    {
+      "query_id": "Q003",
+      "user_id": "user_060",
+      "query": "比较监督学习和无监督学习的区别",
+      "response": "这是专家配置对查询'比较监督学习和无监督学习的区别'的模拟响应。",
+      "response_time": 0.10996675491333008,
+      "config": "专家配置",
+      "quality_scores": {
+        "accuracy": 3.96,
+        "completeness": 3.9,
+        "explanation_quality": 3.54,
+        "learning_value": 3.17
+      },
+      "timestamp": "2025-08-30T05:44:09.105434",
+      "success": true
+    },
+    {
+      "query_id": "Q004",
+      "user_id": "user_019",
+      "query": "如何构建一个神经网络？",
+      "response": "这是专家配置对查询'如何构建一个神经网络？'的模拟响应。",
+      "response_time": 0.10959243774414062,
+      "config": "专家配置",
+      "quality_scores": {
+        "accuracy": 4.31,
+        "completeness": 3.64,
+        "explanation_quality": 4.04,
+        "learning_value": 4.21
+      },
+      "timestamp": "2025-08-30T05:44:09.324609",
+      "success": true
+    },
+    {
+      "query_id": "Q005",
+      "user_id": "user_074",
+      "query": "分析机器学习在医疗领域的应用",
+      "response": "这是专家配置对查询'分析机器学习在医疗领域的应用'的模拟响应。",
+      "response_time": 0.10718345642089844,
+      "config": "专家配置",
+      "quality_scores": {
+        "accuracy": 4.3,
+        "completeness": 3.88,
+        "explanation_quality": 3.62,
+        "learning_value": 3.03
+      },
+      "timestamp": "2025-08-30T05:44:09.540383",
+      "success": true
+    },
+    {
+      "query_id": "Q006",
+      "user_id": "user_064",
+      "query": "使用Python实现K-means聚类算法",
+      "response": "这是专家配置对查询'使用Python实现K-means聚类算法'的模拟响应。",
+      "response_time": 0.10960197448730469,
+      "config": "专家配置",
+      "quality_scores": {
+        "accuracy": 4.23,
+        "completeness": 3.23,
+        "explanation_quality": 3.77,
+        "learning_value": 3.75
+      },
+      "timestamp": "2025-08-30T05:44:09.758032",
+      "success": true
+    },
+    {
+      "query_id": "Q007",
+      "user_id": "user_041",
+      "query": "如何优化神经网络训练速度？",
+      "response": "这是专家配置对查询'如何优化神经网络训练速度？'的模拟响应。",
+      "response_time": 0.11061549186706543,
+      "config": "专家配置",
+      "quality_scores": {
+        "accuracy": 4.51,
+        "completeness": 4.18,
+        "explanation_quality": 4.05,
+        "learning_value": 3.44
+      },
+      "timestamp": "2025-08-30T05:44:09.976245",
+      "success": true
+    },
+    {
+      "query_id": "Q008",
+      "user_id": "user_075",
+      "query": "解释注意力机制在NLP中的作用",
+      "response": "这是专家配置对查询'解释注意力机制在NLP中的作用'的模拟响应。",
+      "response_time": 0.10865283012390137,
+      "config": "专家配置",
+      "quality_scores": {
+        "accuracy": 3.68,
+        "completeness": 3.12,
+        "explanation_quality": 4.29,
+        "learning_value": 3.87
+      },
+      "timestamp": "2025-08-30T05:44:10.194903",
+      "success": true
+    },
+    {
+      "query_id": "Q009",
+      "user_id": "user_007",
+      "query": "设计一个推荐系统架构",
+      "response": "这是专家配置对查询'设计一个推荐系统架构'的模拟响应。",
+      "response_time": 0.10843110084533691,
+      "config": "专家配置",
+      "quality_scores": {
+        "accuracy": 4.4,
+        "completeness": 3.64,
+        "explanation_quality": 4.42,
+        "learning_value": 3.91
+      },
+      "timestamp": "2025-08-30T05:44:10.412112",
+      "success": true
+    },
+    {
+      "query_id": "Q010",
+      "user_id": "user_039",
+      "query": "如何评估机器学习模型的性能？",
+      "response": "这是专家配置对查询'如何评估机器学习模型的性能？'的模拟响应。",
+      "response_time": 0.10860157012939453,
+      "config": "专家配置",
+      "quality_scores": {
+        "accuracy": 3.42,
+        "completeness": 2.95,
+        "explanation_quality": 4.28,
+        "learning_value": 3.55
+      },
+      "timestamp": "2025-08-30T05:44:10.630257",
+      "success": true
+    },
+    {
+      "query_id": "Q011",
+      "user_id": "user_078",
+      "query": "解释强化学习在游戏AI中的应用",
+      "response": "这是专家配置对查询'解释强化学习在游戏AI中的应用'的模拟响应。",
+      "response_time": 0.10890483856201172,
+      "config": "专家配置",
+      "quality_scores": {
+        "accuracy": 4.7,
+        "completeness": 3.29,
+        "explanation_quality": 4.0,
+        "learning_value": 3.45
+      },
+      "timestamp": "2025-08-30T05:44:10.847540",
+      "success": true
+    },
+    {
+      "query_id": "Q012",
+      "user_id": "user_070",
+      "query": "分析大语言模型的发展趋势",
+      "response": "这是专家配置对查询'分析大语言模型的发展趋势'的模拟响应。",
+      "response_time": 0.1095578670501709,
+      "config": "专家配置",
+      "quality_scores": {
+        "accuracy": 4.41,
+        "completeness": 4.5,
+        "explanation_quality": 4.47,
+        "learning_value": 3.09
+      },
+      "timestamp": "2025-08-30T05:44:11.065180",
+      "success": true
+    },
+    {
+      "query_id": "Q013",
+      "user_id": "user_081",
+      "query": "机器学习如何改变金融行业？",
+      "response": "这是专家配置对查询'机器学习如何改变金融行业？'的模拟响应。",
+      "response_time": 0.10899019241333008,
+      "config": "专家配置",
+      "quality_scores": {
+        "accuracy": 4.17,
+        "completeness": 4.11,
+        "explanation_quality": 3.77,
+        "learning_value": 3.46
+      },
+      "timestamp": "2025-08-30T05:44:11.281522",
+      "success": true
+    },
+    {
+      "query_id": "Q014",
+      "user_id": "user_041",
+      "query": "AI在教育领域的创新应用",
+      "response": "这是专家配置对查询'AI在教育领域的创新应用'的模拟响应。",
+      "response_time": 0.10992574691772461,
+      "config": "专家配置",
+      "quality_scores": {
+        "accuracy": 3.45,
+        "completeness": 3.61,
+        "explanation_quality": 4.19,
+        "learning_value": 3.63
+      },
+      "timestamp": "2025-08-30T05:44:11.499540",
+      "success": true
+    },
+    {
+      "query_id": "Q015",
+      "user_id": "user_092",
+      "query": "讨论AI的伦理问题和解决方案",
+      "response": "这是专家配置对查询'讨论AI的伦理问题和解决方案'的模拟响应。",
+      "response_time": 0.10882997512817383,
+      "config": "专家配置",
+      "quality_scores": {
+        "accuracy": 4.18,
+        "completeness": 3.12,
+        "explanation_quality": 4.69,
+        "learning_value": 3.87
+      },
+      "timestamp": "2025-08-30T05:44:11.716170",
+      "success": true
+    },
+    {
+      "query_id": "Q016",
+      "user_id": "user_040",
+      "query": "预测未来10年AI技术的发展",
+      "response": "这是专家配置对查询'预测未来10年AI技术的发展'的模拟响应。",
+      "response_time": 0.10748577117919922,
+      "config": "专家配置",
+      "quality_scores": {
+        "accuracy": 3.63,
+        "completeness": 4.07,
+        "explanation_quality": 3.99,
+        "learning_value": 3.68
+      },
+      "timestamp": "2025-08-30T05:44:11.931089",
+      "success": true
+    }
+  ],
+  "statistics": {
+    "total_queries": 16,
+    "total_configs": 4,
+    "timestamp": "2025-08-30T05:44:12.038321",
+    "comparisons": {
+      "基础配置_vs_标准配置": {
+        "mean_diff": 0.0,
+        "cohens_d": 0,
+        "effect_size": "none",
+        "p_value": 0.01278085513793423
+      },
+      "基础配置_vs_增强配置": {
+        "mean_diff": 0.0,
+        "cohens_d": 0,
+        "effect_size": "none",
+        "p_value": 0.00816681838353812
+      },
+      "基础配置_vs_专家配置": {
+        "mean_diff": 0.0,
+        "cohens_d": 0,
+        "effect_size": "none",
+        "p_value": 0.02078742781941417
+      },
+      "标准配置_vs_增强配置": {
+        "mean_diff": 0.0,
+        "cohens_d": 0,
+        "effect_size": "none",
+        "p_value": 0.025912806513876948
+      },
+      "标准配置_vs_专家配置": {
+        "mean_diff": 0.0,
+        "cohens_d": 0,
+        "effect_size": "none",
+        "p_value": 0.03985420862896694
+      },
+      "增强配置_vs_专家配置": {
+        "mean_diff": 0.0,
+        "cohens_d": 0,
+        "effect_size": "none",
+        "p_value": 0.010466693815464622
+      }
+    }
+  }
+}

@@ -41,7 +41,16 @@ class KnowledgeRetrieverAgent(BaseAgent):
         
         # 使用相对路径指向项目根目录
         project_root = Path(__file__).parent.parent.parent
-        self.knowledge_base_dir = project_root / (knowledge_base_dir or kb_config.get('root_dir', "concept_knowledge_bases"))
+        kb_dir = knowledge_base_dir or kb_config.get('root_dir', "concept_knowledge_bases")
+        self.knowledge_base_dir = project_root / kb_dir
+        
+        # 检查知识库目录是否存在
+        if not self.knowledge_base_dir.exists():
+            self.logger.warning(f"Knowledge base directory not found: {self.knowledge_base_dir}")
+            # 尝试使用绝对路径
+            self.knowledge_base_dir = Path(kb_dir).resolve()
+            if not self.knowledge_base_dir.exists():
+                self.logger.warning(f"Knowledge base directory still not found: {self.knowledge_base_dir}")
         
         # 缓存配置
         cache_config = kb_config.get('cache', {})

@@ -5,7 +5,7 @@
 兼容性模块 - 重新导出utils中的内容
 """
 
-# 重新导出所有内容以保持向后兼容性
+
 from utils import (
     BaseAgent,
     AgentState,
@@ -24,7 +24,7 @@ from utils import (
     get_agent
 )
 
-# 为了向后兼容，保留原有的导入路径
+
 __all__ = [
     'BaseAgent',
     'AgentState',

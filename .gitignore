@@ -2,6 +2,9 @@
 concept_knowledge_bases/
 logs/
 origin_data/
+data/
+eacl23_soqg-main/
+ollama-model/
 
 # 忽略特定文件
 chat.json
@@ -67,9 +70,17 @@ Thumbs.db
 
 # 数据文件
 *.csv
-*.json
 *.pkl
 *.pickle
+
+# 忽略特定JSON文件（保留配置文件）
+chat.json
+*.log.json
+data/*.json
+concept_knowledge_bases/*.json
+origin_data/*.json
+eacl23_soqg-main/*.json
+ollama-model/*.json
 
 # 备份文件
 backup_*/ 

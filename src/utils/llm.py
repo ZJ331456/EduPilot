@@ -196,8 +196,16 @@ class OllamaLLMClient(BaseLLMClient):
             if self.debug:
                 self.logger.debug(f"Ollama API call params: {params}")
             
-            # 调用Ollama API
-            response = self.client.chat(**params)
+            # 调用Ollama API - 移除不支持的参数
+            ollama_params = {
+                "model": self.model,
+                "messages": ollama_messages,
+                "options": {
+                    "temperature": kwargs.get('temperature', self.temperature),
+                    "top_p": kwargs.get('top_p', self.top_p),
+                }
+            }
+            response = self.client.chat(**ollama_params)
             
             return LLMResponse(
                 content=response['message']['content'],
@@ -289,12 +297,16 @@ class OllamaLLMClient(BaseLLMClient):
             filtered_kwargs = {k: v for k, v in kwargs.items() 
                              if k not in ['max_tokens', 'response_format']}
             
-            # 调用Ollama异步API
-            response = await self.async_client.chat(
-                model=self.model,
-                messages=ollama_messages,
-                **filtered_kwargs
-            )
+            # 调用Ollama异步API - 使用options参数
+            ollama_params = {
+                "model": self.model,
+                "messages": ollama_messages,
+                "options": {
+                    "temperature": filtered_kwargs.get('temperature', self.temperature),
+                    "top_p": filtered_kwargs.get('top_p', self.top_p),
+                }
+            }
+            response = await self.async_client.chat(**ollama_params)
             
             return LLMResponse(
                 content=response['message']['content'],
@@ -418,6 +430,9 @@ class QwenLLMClient(BaseLLMClient):
         if not self.api_key and get_config('llm.fallback_to_env', True):
             self.api_key = os.getenv('QWEN_API_KEY') or os.getenv('DASHSCOPE_API_KEY')
         
+        # 先调用父类初始化，设置logger
+        super().__init__(model, **kwargs)
+        
         # 调试信息
         if not self.api_key:
             self.logger.warning("Qwen API key not found in config or environment variables")
@@ -425,8 +440,6 @@ class QwenLLMClient(BaseLLMClient):
             self.logger.info(f"Using Qwen API key: {self.api_key[:8]}...")
             self.logger.info(f"Using Qwen base URL: {self.base_url}")
             self.logger.info(f"Using Qwen model: {model}")
-        
-        super().__init__(model, **kwargs)
         
         if not self.api_key:
             raise ValueError("API key is required for Qwen client")

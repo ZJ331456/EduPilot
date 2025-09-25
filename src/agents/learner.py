@@ -66,10 +66,9 @@ class LearnerAgent(BaseAgent):
     
     def can_execute(self, state: AgentState) -> bool:
         """检查是否可以执行"""
-        return (
-            state.execution_result is not None and
-            state.execution_result.get("success", False)
-        )
+        # 放宽条件：只要有execution_result就可以执行，不强制要求success为True
+        # 这样可以分析失败的执行结果，提供学习反馈
+        return state.execution_result is not None
     
     async def execute(self, state: AgentState) -> AgentState:
         """执行学习分析（支持基础和增强模式）"""
