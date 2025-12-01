@@ -1,0 +1,72 @@
+# EduPilot 智能体系统环境变量配置示例
+# 复制此文件为 .env 并填入实际值
+
+# ===================
+# Ollama 配置
+# ===================
+# Ollama 服务地址
+OLLAMA_BASE_URL=http://localhost:11434
+
+# 使用的模型名称
+OLLAMA_MODEL=qwen2.5:latest
+
+# 是否启用 Ollama
+OLLAMA_ENABLED=true
+
+# 调试模式
+OLLAMA_DEBUG=false
+
+# 温度参数 (0.0-1.0)
+OLLAMA_TEMPERATURE=0.7
+
+# Top-p 参数 (0.0-1.0)
+OLLAMA_TOP_P=0.9
+
+# 最大令牌数
+OLLAMA_MAX_TOKENS=2000
+
+# ===================
+# Qwen API 配置
+# ===================
+# Qwen API 密钥 (从阿里云获取)
+QWEN_API_KEY=your_qwen_api_key_here
+
+# 或者使用 DASHSCOPE_API_KEY
+# DASHSCOPE_API_KEY=your_dashscope_api_key_here
+
+# API 基础地址
+QWEN_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
+
+# 使用的模型
+QWEN_MODEL=qwen-plus
+
+# 是否启用 Qwen
+QWEN_ENABLED=true
+
+# 调试模式
+QWEN_DEBUG=false
+
+# 温度参数 (0.0-1.0)
+QWEN_TEMPERATURE=0.7
+
+# Top-p 参数 (0.0-1.0)
+QWEN_TOP_P=0.9
+
+# 最大令牌数
+QWEN_MAX_TOKENS=2000
+
+# 嵌入模型
+QWEN_EMBEDDING_MODEL=text-embedding-v1
+
+# ===================
+# 系统配置
+# ===================
+# 日志级别 (DEBUG, INFO, WARNING, ERROR)
+LOG_LEVEL=INFO
+
+# 是否启用调试模式
+DEBUG=false
+
+# 工作流超时时间（秒）
+WORKFLOW_TIMEOUT=300
+

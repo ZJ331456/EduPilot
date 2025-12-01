@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+    "skipLibCheck": true,
+    "allowSyntheticDefaultImports": true,
+    "types": []
+  },
+  "include": ["src/**/*.js", "src/**/*.vue"],
+  "exclude": ["node_modules", "dist"]
+}

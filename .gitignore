@@ -1,0 +1,66 @@
+# Python
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv
+*.egg-info/
+dist/
+build/
+
+# 环境变量和敏感信息
+.env
+.env.local
+*.key
+*.pem
+
+# 数据文件（运行时生成）
+data/
+*.db
+*.sqlite
+*.sqlite3
+
+# 日志文件
+*.log
+logs/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 操作系统
+.DS_Store
+Thumbs.db
+
+# 前端
+node_modules/
+dist/
+.nuxt/
+.next/
+.cache/
+
+# 测试和临时文件
+test_result/
+*.tmp
+*.bak
+
+# 测试目录
+integration_tests/
+tests/
+.pytest_cache/
+
+# 历史记录和缓存
+.history/
+__pycache__/
+
+# 数据目录
+concept_knowledge_bases/
+
+# 大文件目录（包含PDF等）
+metadata/
