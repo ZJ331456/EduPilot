@@ -33,9 +33,22 @@ class EmbeddingManager:
         """创建嵌入函数
         
         尝试顺序：
-        1. sentence_transformers（推荐）
-        2. 简单哈希嵌入（降级）
+        1. Qwen embedding（如果配置了 QWEN_API_KEY）
+        2. sentence_transformers（推荐）
+        3. 简单哈希嵌入（降级）
         """
+        import os
+        
+        # 优先尝试使用 Qwen embedding
+        qwen_api_key = os.getenv("QWEN_API_KEY") or os.getenv("DASHSCOPE_API_KEY")
+        if qwen_api_key:
+            try:
+                embedding_func = self._create_qwen_embedding()
+                if embedding_func:
+                    return embedding_func
+            except Exception as e:
+                self.logger.warning(f"Qwen embedding 不可用: {e}")
+        
         try:
             # 尝试使用 sentence_transformers
             embedding_func = self._create_sentence_transformer_embedding()
@@ -47,6 +60,37 @@ class EmbeddingManager:
         # 降级到简单嵌入
         self.logger.info("使用简单哈希嵌入")
         return self._create_simple_embedding()
+    
+    def _create_qwen_embedding(self):
+        """创建 Qwen 嵌入函数"""
+        import os
+        from src.infrastructure.nano_graphrag._llm import qwen_embedding
+        from src.infrastructure.nano_graphrag._utils import EmbeddingFunc
+        
+        # 检查 API Key
+        api_key = os.getenv("QWEN_API_KEY") or os.getenv("DASHSCOPE_API_KEY")
+        if not api_key:
+            return None
+        
+        # 获取 embedding 模型
+        embedding_model = os.getenv("QWEN_EMBEDDING_MODEL", "text-embedding-v1")
+        
+        # 创建包装函数
+        async def qwen_embedding_wrapper(texts):
+            """Qwen embedding 包装函数"""
+            if isinstance(texts, str):
+                texts = [texts]
+            return await qwen_embedding(texts)
+        
+        # 创建 EmbeddingFunc
+        embedding_func = EmbeddingFunc(
+            embedding_dim=self.embedding_dim,
+            max_token_size=8192,
+            func=qwen_embedding_wrapper
+        )
+        
+        self.logger.info(f"使用 Qwen embedding 模型: {embedding_model} ({self.embedding_dim}维)")
+        return embedding_func
     
     def _create_sentence_transformer_embedding(self):
         """创建 sentence_transformers 嵌入函数"""

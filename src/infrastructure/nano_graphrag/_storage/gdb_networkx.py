@@ -13,7 +13,7 @@ from ..base import (
     BaseGraphStorage,
     SingleCommunitySchema,
 )
-from ..prompt import GRAPH_FIELD_SEP
+from ..prompt_output_cn import GRAPH_FIELD_SEP
 
 
 @dataclass

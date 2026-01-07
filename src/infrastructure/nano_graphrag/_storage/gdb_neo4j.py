@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from typing import Union
 from ..base import BaseGraphStorage, SingleCommunitySchema
 from .._utils import logger
-from ..prompt import GRAPH_FIELD_SEP
+from ..prompt_output_cn import GRAPH_FIELD_SEP
 
 neo4j_lock = asyncio.Lock()
 

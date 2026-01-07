@@ -25,7 +25,7 @@ from .base import (
     TextChunkSchema,
     QueryParam,
 )
-from .prompt import GRAPH_FIELD_SEP, PROMPTS
+from .prompt_output_cn import GRAPH_FIELD_SEP, PROMPTS
 
 
 def chunking_by_token_size(
@@ -65,7 +65,7 @@ def chunking_by_seperators(
     overlap_token_size=128,
     max_token_size=1024,
 ):
-    from .prompt import PROMPTS
+    from .prompt_output_cn import PROMPTS
     # *** 修改 ***: 直接使用 wrapper 编码，而不是获取底层 tokenizer
     separators = [tokenizer_wrapper.encode(s) for s in PROMPTS["default_text_separator"]]
     splitter = SeparatorSplitter(
@@ -644,23 +644,34 @@ async def generate_community_report(
         community: SingleCommunitySchema, already_reports: dict[str, CommunitySchema]
     ):
         nonlocal already_processed
-        describe = await _pack_single_community_describe(
-            knwoledge_graph_inst,
-            community,
-            tokenizer_wrapper=tokenizer_wrapper, 
-            max_token_size=global_config["best_model_max_token_size"] - prompt_overhead -200, # extra token for chat template and prompt template
-            already_reports=already_reports,
-            global_config=global_config,
-        )
-        prompt = prompt_template.format(input_text=describe)
+        try:
+            describe = await _pack_single_community_describe(
+                knwoledge_graph_inst,
+                community,
+                tokenizer_wrapper=tokenizer_wrapper, 
+                max_token_size=global_config["best_model_max_token_size"] - prompt_overhead -200, # extra token for chat template and prompt template
+                already_reports=already_reports,
+                global_config=global_config,
+            )
+            prompt = prompt_template.format(input_text=describe)
 
-
-        response = await use_llm_func(prompt, **llm_extra_kwargs)
-        data = use_string_json_convert_func(response)
-        already_processed += 1
-        now_ticks = PROMPTS["process_tickers"][already_processed % len(PROMPTS["process_tickers"])]
-        print(f"{now_ticks} Processed {already_processed} communities\r", end="", flush=True)
-        return data
+            response = await use_llm_func(prompt, **llm_extra_kwargs)
+            data = use_string_json_convert_func(response)
+            already_processed += 1
+            now_ticks = PROMPTS["process_tickers"][already_processed % len(PROMPTS["process_tickers"])]
+            print(f"{now_ticks} Processed {already_processed} communities\r", end="", flush=True)
+            return data
+        except Exception as e:
+            # 处理内容审核错误或其他异常：跳过该社区，返回 None
+            error_msg = str(e)
+            if "data_inspection_failed" in error_msg or "inappropriate content" in error_msg.lower():
+                logger.warning(f"社区报告生成失败（内容审核限制），跳过该社区: {e}")
+            else:
+                logger.warning(f"社区报告生成失败，跳过该社区: {e}")
+            already_processed += 1
+            now_ticks = PROMPTS["process_tickers"][already_processed % len(PROMPTS["process_tickers"])]
+            print(f"{now_ticks} Processed {already_processed} communities (skipped)\r", end="", flush=True)
+            return None  # 返回 None，后续会过滤掉
 
     levels = sorted(set([c["level"] for c in community_values]), reverse=True)
     logger.info(f"Generating by levels: {levels}")
@@ -677,22 +688,32 @@ async def generate_community_report(
             *[
                 _form_single_community_report(c, community_datas)
                 for c in this_level_community_values
-            ]
+            ],
+            return_exceptions=True  # 允许异常，不中断其他任务
         )
-        community_datas.update(
-            {
-                k: {
-                    "report_string": _community_report_json_to_str(r),
-                    "report_json": r,
-                    **v,
+        # 过滤掉 None 和异常结果，只保留成功的报告
+        valid_reports = []
+        valid_keys = []
+        valid_values = []
+        for k, r, v in zip(this_level_community_keys, this_level_communities_reports, this_level_community_values):
+            if r is not None and not isinstance(r, Exception):
+                valid_reports.append(r)
+                valid_keys.append(k)
+                valid_values.append(v)
+            elif isinstance(r, Exception):
+                logger.warning(f"社区 {k} 报告生成异常: {r}")
+        
+        if valid_reports:
+            community_datas.update(
+                {
+                    k: {
+                        "report_string": _community_report_json_to_str(r),
+                        "report_json": r,
+                        **v,
+                    }
+                    for k, r, v in zip(valid_keys, valid_reports, valid_values)
                 }
-                for k, r, v in zip(
-                    this_level_community_keys,
-                    this_level_communities_reports,
-                    this_level_community_values,
-                )
-            }
-        )
+            )
     print()  # clear the progress bar
     await community_report_kv.upsert(community_datas)
 

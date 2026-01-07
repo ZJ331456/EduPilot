@@ -27,6 +27,19 @@ from typing import Dict, Any, List, Optional, Set
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 
+# 加载 .env 文件
+try:
+    from dotenv import load_dotenv
+    project_root = Path(__file__).parent.parent.parent.parent.parent
+    env_path = project_root / ".env"
+    if env_path.exists():
+        load_dotenv(env_path, override=True)
+        logging.getLogger(__name__).info(f"已加载环境变量文件: {env_path}")
+except ImportError:
+    logging.getLogger(__name__).warning("python-dotenv 未安装，将使用系统环境变量")
+except Exception as e:
+    logging.getLogger(__name__).warning(f"加载 .env 文件失败: {e}")
+
 from src.infrastructure.utils import BaseAgent, AgentState, QueryType
 from src.infrastructure.nano_graphrag import GraphRAG, QueryParam
 
@@ -57,13 +70,13 @@ class KnowledgeManagerAgent(BaseAgent):
         
         # 配置
         kb_config = {
-            'root_dir': "concept_knowledge_bases",
+            'root_dir': "data/concept_knowledge_bases",
             'default_kb': "default",
         }
         
         # 知识库路径
         project_root = Path(__file__).parent.parent.parent.parent.parent
-        kb_dir = knowledge_base_dir or kb_config.get('root_dir', "concept_knowledge_bases")
+        kb_dir = knowledge_base_dir or kb_config.get('root_dir', "data/concept_knowledge_bases")
         self.knowledge_base_dir = project_root / kb_dir
         
         if not self.knowledge_base_dir.exists():
@@ -278,6 +291,30 @@ class KnowledgeManagerAgent(BaseAgent):
             graphrag_cache_dir = concept_dir / "graphrag_cache"
             graphrag_cache_dir.mkdir(parents=True, exist_ok=True)
             
+            # 检查是否使用 Qwen
+            qwen_api_key = os.getenv("QWEN_API_KEY") or os.getenv("DASHSCOPE_API_KEY")
+            qwen_model = os.getenv("QWEN_MODEL", "qwen-plus")
+            
+            # 配置 LLM 函数
+            if qwen_api_key:
+                # 使用 Qwen
+                from src.infrastructure.nano_graphrag._llm import qwen_complete_if_cache
+                
+                async def qwen_best_model_func(prompt, system_prompt=None, history_messages=[], **kwargs):
+                    return await qwen_complete_if_cache(
+                        qwen_model, prompt, system_prompt=system_prompt, history_messages=history_messages, **kwargs
+                    )
+                
+                best_model_func = qwen_best_model_func
+                cheap_model_func = qwen_best_model_func  # 使用同一个模型
+                self.logger.info(f"使用 Qwen 模型进行索引: {qwen_model}")
+            else:
+                # 使用默认的 OpenAI（需要 OPENAI_API_KEY）
+                from src.infrastructure.nano_graphrag._llm import gpt_4o_complete, gpt_4o_mini_complete
+                best_model_func = gpt_4o_complete
+                cheap_model_func = gpt_4o_mini_complete
+                self.logger.info("使用默认 OpenAI 模型进行索引")
+            
             # 创建GraphRAG实例
             rag = GraphRAG(
                 working_dir=str(graphrag_cache_dir),
@@ -286,7 +323,9 @@ class KnowledgeManagerAgent(BaseAgent):
                 enable_local=False,
                 embedding_func_max_async=16,
                 embedding_batch_num=512,
-                embedding_func=self.embedding_manager.get_embedding_func()
+                embedding_func=self.embedding_manager.get_embedding_func(),
+                best_model_func=best_model_func,
+                cheap_model_func=cheap_model_func
             )
             
             # 执行索引

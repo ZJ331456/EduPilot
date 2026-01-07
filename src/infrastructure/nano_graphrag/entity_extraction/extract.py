@@ -9,7 +9,7 @@ from nano_graphrag.base import (
     BaseVectorStorage,
     TextChunkSchema,
 )
-from nano_graphrag.prompt import PROMPTS
+from nano_graphrag.prompt_output_cn import PROMPTS
 from nano_graphrag._utils import logger, compute_mdhash_id
 from nano_graphrag.entity_extraction.module import TypedEntityRelationshipExtractor
 from nano_graphrag._op import _merge_edges_then_upsert, _merge_nodes_then_upsert

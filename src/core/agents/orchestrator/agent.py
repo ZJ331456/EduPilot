@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 Orchestrator Agent (原 Planner)
-负责分析用户意图，动态调度下游 Agent (KnowledgeRetriever, ToolSpecialist, CurriculumDesigner 等)
+负责分析用户意图，动态调度下游 Agent (KnowledgeManager, ToolSpecialist, CurriculumDesigner 等)
 """
 
 import logging

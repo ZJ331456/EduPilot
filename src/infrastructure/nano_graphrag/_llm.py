@@ -19,6 +19,7 @@ from .base import BaseKVStorage
 global_openai_async_client = None
 global_azure_openai_async_client = None
 global_amazon_bedrock_async_client = None
+global_qwen_async_client = None
 
 
 def get_openai_async_client_instance():
@@ -26,6 +27,18 @@ def get_openai_async_client_instance():
     if global_openai_async_client is None:
         global_openai_async_client = AsyncOpenAI()
     return global_openai_async_client
+
+
+def get_qwen_async_client_instance():
+    """获取 Qwen (兼容 OpenAI API) 异步客户端实例"""
+    global global_qwen_async_client
+    if global_qwen_async_client is None:
+        api_key = os.getenv("QWEN_API_KEY") or os.getenv("DASHSCOPE_API_KEY")
+        base_url = os.getenv("QWEN_BASE_URL", "https://dashscope.aliyuncs.com/compatible-mode/v1")
+        if not api_key:
+            raise ValueError("QWEN_API_KEY or DASHSCOPE_API_KEY environment variable must be set")
+        global_qwen_async_client = AsyncOpenAI(api_key=api_key, base_url=base_url)
+    return global_qwen_async_client
 
 
 def get_azure_openai_async_client_instance():
@@ -292,3 +305,81 @@ async def azure_openai_embedding(texts: list[str]) -> np.ndarray:
         model="text-embedding-3-small", input=texts, encoding_format="float"
     )
     return np.array([dp.embedding for dp in response.data])
+
+
+@retry(
+    stop=stop_after_attempt(5),
+    wait=wait_exponential(multiplier=1, min=4, max=10),
+    retry=retry_if_exception_type((RateLimitError, APIConnectionError)),
+)
+async def qwen_complete_if_cache(
+    model, prompt, system_prompt=None, history_messages=[], **kwargs
+) -> str:
+    """Qwen 完成函数（兼容 OpenAI API）"""
+    qwen_async_client = get_qwen_async_client_instance()
+    hashing_kv: BaseKVStorage = kwargs.pop("hashing_kv", None)
+    messages = []
+    if system_prompt:
+        messages.append({"role": "system", "content": system_prompt})
+    messages.extend(history_messages)
+    messages.append({"role": "user", "content": prompt})
+    if hashing_kv is not None:
+        args_hash = compute_args_hash(model, messages)
+        if_cache_return = await hashing_kv.get_by_id(args_hash)
+        if if_cache_return is not None:
+            return if_cache_return["return"]
+
+    response = await qwen_async_client.chat.completions.create(
+        model=model, messages=messages, **kwargs
+    )
+
+    if hashing_kv is not None:
+        await hashing_kv.upsert(
+            {args_hash: {"return": response.choices[0].message.content, "model": model}}
+        )
+        await hashing_kv.index_done_callback()
+    return response.choices[0].message.content
+
+
+async def qwen_complete(
+    prompt, system_prompt=None, history_messages=[], **kwargs
+) -> str:
+    """Qwen 完成函数（使用默认模型）"""
+    model = os.getenv("QWEN_MODEL", "qwen-plus")
+    return await qwen_complete_if_cache(
+        model,
+        prompt,
+        system_prompt=system_prompt,
+        history_messages=history_messages,
+        **kwargs,
+    )
+
+
+@wrap_embedding_func_with_attrs(embedding_dim=1536, max_token_size=8192)
+@retry(
+    stop=stop_after_attempt(5),
+    wait=wait_exponential(multiplier=1, min=4, max=10),
+    retry=retry_if_exception_type((RateLimitError, APIConnectionError)),
+)
+async def qwen_embedding(texts: list[str]) -> np.ndarray:
+    """Qwen 嵌入函数
+    
+    注意：Qwen API 限制 batch size 不能超过 10，所以需要分批处理
+    """
+    qwen_async_client = get_qwen_async_client_instance()
+    embedding_model = os.getenv("QWEN_EMBEDDING_MODEL", "text-embedding-v1")
+    
+    # Qwen API 限制：batch size 不能超过 10
+    MAX_BATCH_SIZE = 10
+    all_embeddings = []
+    
+    # 分批处理
+    for i in range(0, len(texts), MAX_BATCH_SIZE):
+        batch_texts = texts[i:i + MAX_BATCH_SIZE]
+        response = await qwen_async_client.embeddings.create(
+            model=embedding_model, input=batch_texts, encoding_format="float"
+        )
+        batch_embeddings = [dp.embedding for dp in response.data]
+        all_embeddings.extend(batch_embeddings)
+    
+    return np.array(all_embeddings)
