@@ -60,6 +60,9 @@ class LearningWorkflowState(TypedDict):
     achieved_objectives: List[str]
     current_focus: str
     key_concepts_covered: List[str]
+    goal_type: str
+    skill_level: str
+    difficulty_level: str
     
     # 规划和执行相关
     plan: Optional[Dict[str, Any]]
@@ -78,8 +81,11 @@ class LearningWorkflowState(TypedDict):
 
     # 数据槽位
     retrieved_docs: List[Any]  # RAG结果
+    validated_docs: List[Any]
     tool_outputs: Dict[str, Any]  # 工具运行结果
     curriculum_plan: Dict[str, Any]  # 课程结构
+    evidence_used: List[Dict[str, Any]]
+    quiz_stats: Dict[str, Any]
     
     # 审核槽位
     draft_content: str  # 初稿
@@ -145,6 +151,9 @@ def create_initial_state(
         achieved_objectives=[],
         current_focus="",
         key_concepts_covered=[],
+        goal_type="general",
+        skill_level="unknown",
+        difficulty_level="medium",
         
         # 规划和执行相关
         plan=None,
@@ -163,8 +172,11 @@ def create_initial_state(
 
         # 数据槽位
         retrieved_docs=[],
+        validated_docs=[],
         tool_outputs={},
         curriculum_plan={},
+        evidence_used=[],
+        quiz_stats={},
         
         # 审核槽位
         draft_content="",
@@ -232,6 +244,9 @@ def state_to_agent_state(state: LearningWorkflowState) -> 'AgentState':
     agent_state.achieved_objectives = state["achieved_objectives"]
     agent_state.current_focus = state["current_focus"]
     agent_state.key_concepts_covered = state["key_concepts_covered"]
+    agent_state.goal_type = state.get("goal_type", "general")
+    agent_state.skill_level = state.get("skill_level", "unknown")
+    agent_state.difficulty_level = state.get("difficulty_level", "medium")
     
     # 规划和执行相关
     agent_state.plan = state["plan"]
@@ -250,8 +265,11 @@ def state_to_agent_state(state: LearningWorkflowState) -> 'AgentState':
     
     # 数据槽位
     agent_state.retrieved_docs = state.get("retrieved_docs", [])
+    agent_state.validated_docs = state.get("validated_docs", [])
     agent_state.tool_outputs = state.get("tool_outputs", {})
     agent_state.curriculum_plan = state.get("curriculum_plan", {})
+    agent_state.evidence_used = state.get("evidence_used", [])
+    agent_state.quiz_stats = state.get("quiz_stats", {})
     
     # 审核槽位
     agent_state.draft_content = state.get("draft_content", "")
@@ -311,6 +329,19 @@ def agent_state_to_state(agent_state: 'AgentState') -> LearningWorkflowState:
         # 学习和反馈相关
         learning_feedback=agent_state.learning_feedback,
         knowledge_updates=agent_state.knowledge_updates,
+
+        # 学习画像 / 难度
+        goal_type=getattr(agent_state, "goal_type", "general"),
+        skill_level=getattr(agent_state, "skill_level", "unknown"),
+        difficulty_level=getattr(agent_state, "difficulty_level", "medium"),
+
+        # 数据槽位
+        retrieved_docs=getattr(agent_state, "retrieved_docs", []),
+        validated_docs=getattr(agent_state, "validated_docs", []),
+        tool_outputs=getattr(agent_state, "tool_outputs", {}),
+        curriculum_plan=getattr(agent_state, "curriculum_plan", {}),
+        evidence_used=getattr(agent_state, "evidence_used", []),
+        quiz_stats=getattr(agent_state, "quiz_stats", {}),
         
         # 元数据
         metadata=agent_state.metadata,
@@ -365,6 +396,9 @@ def update_state_from_agent_state(state: LearningWorkflowState, agent_state: 'Ag
     state["achieved_objectives"] = agent_state.achieved_objectives
     state["current_focus"] = agent_state.current_focus
     state["key_concepts_covered"] = agent_state.key_concepts_covered
+    state["goal_type"] = getattr(agent_state, "goal_type", "general")
+    state["skill_level"] = getattr(agent_state, "skill_level", "unknown")
+    state["difficulty_level"] = getattr(agent_state, "difficulty_level", "medium")
     
     state["plan"] = agent_state.plan
     state["execution_result"] = agent_state.execution_result
@@ -380,8 +414,11 @@ def update_state_from_agent_state(state: LearningWorkflowState, agent_state: 'Ag
     
     # 数据槽位
     state["retrieved_docs"] = getattr(agent_state, 'retrieved_docs', [])
+    state["validated_docs"] = getattr(agent_state, 'validated_docs', [])
     state["tool_outputs"] = getattr(agent_state, 'tool_outputs', {})
     state["curriculum_plan"] = getattr(agent_state, 'curriculum_plan', {})
+    state["evidence_used"] = getattr(agent_state, 'evidence_used', [])
+    state["quiz_stats"] = getattr(agent_state, 'quiz_stats', {})
     
     # 审核槽位
     state["draft_content"] = getattr(agent_state, 'draft_content', "")

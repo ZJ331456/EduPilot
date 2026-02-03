@@ -6,6 +6,7 @@ LangGraph 节点定义
 """
 
 import logging
+import asyncio
 from typing import Dict, Any, List, Optional
 from datetime import datetime
 
@@ -39,6 +40,8 @@ class LearningWorkflowNodes:
         }
         if feature_flags:
             self.feature_flags.update(feature_flags)
+        self.node_timeout = 25  # seconds per agent节点超时
+        self.retry_attempts = 2
         
         # 初始化所有智能体
         self.agents = {
@@ -88,6 +91,23 @@ class LearningWorkflowNodes:
         # }
         # self.agents["executor"].register_tool_agents(enabled_tools)
         self.logger.info(f"Feature flags applied to workflow nodes: {self.feature_flags}")
+
+    async def _run_agent(self, agent, agent_state, timeout: Optional[int], perf_key: str):
+        """统一封装超时与重试"""
+        attempts = 0
+        last_err = None
+        limit = timeout or self.node_timeout
+        while attempts <= self.retry_attempts:
+            try:
+                return await asyncio.wait_for(agent.run(agent_state), timeout=limit)
+            except asyncio.TimeoutError as e:
+                last_err = e
+                self.logger.warning(f"{agent.__class__.__name__} timeout ({limit}s), attempt {attempts+1}/{self.retry_attempts+1}")
+            except Exception as e:
+                last_err = e
+                self.logger.warning(f"{agent.__class__.__name__} error: {e}, attempt {attempts+1}/{self.retry_attempts+1}")
+            attempts += 1
+        raise last_err
     
     async def query_analyzer_node(self, state: LearningWorkflowState) -> LearningWorkflowState:
         """查询分析节点"""
@@ -101,10 +121,16 @@ class LearningWorkflowNodes:
             # 执行查询分析
             agent = self.agents["query_analyzer"]
             if agent.can_execute(agent_state):
-                agent_state = await agent.run(agent_state)
+                agent_state = await self._run_agent(agent, agent_state, timeout=self.node_timeout, perf_key="query_analyzer_ms")
             
             # 更新状态
             state = update_state_from_agent_state(state, agent_state)
+            # 从解析结果提取目标/水平
+            if agent_state.interpretation:
+                interp = agent_state.interpretation
+                state["goal_type"] = interp.get("goal_type", state.get("goal_type", "general"))
+                state["skill_level"] = interp.get("skill_level", state.get("skill_level", "unknown"))
+                state["difficulty_level"] = interp.get("difficulty", state.get("difficulty_level", "medium"))
             
             # 设置下一步
             state["next_step"] = "planner"
@@ -153,10 +179,13 @@ class LearningWorkflowNodes:
             # 2. 执行常规规划
             agent = self.agents["planner"]
             if agent.can_execute(agent_state):
-                agent_state = await agent.run(agent_state)
+                agent_state = await self._run_agent(agent, agent_state, timeout=self.node_timeout, perf_key="planner_ms")
             
             # 更新状态
             state = update_state_from_agent_state(state, agent_state)
+            if agent_state.plan:
+                state["difficulty_level"] = agent_state.plan.get("difficulty_level", state.get("difficulty_level", "medium"))
+                state["goal_type"] = agent_state.plan.get("goal_type", state.get("goal_type", "general"))
             
             # 设置下一步：根据 Planner 决定的 next_workers 路由
             # Planner 已经将 "executor" 拆解为具体的 workers (e.g., knowledge_manager, tool_specialist)
@@ -227,7 +256,7 @@ class LearningWorkflowNodes:
             agent = self.agents["quiz_master"]
             
             if agent.can_execute(agent_state):
-                agent_state = await agent.run(agent_state)
+                agent_state = await self._run_agent(agent, agent_state, timeout=self.node_timeout, perf_key="quiz_master_ms")
             
             state = update_state_from_agent_state(state, agent_state)
             
@@ -238,7 +267,10 @@ class LearningWorkflowNodes:
             if "quiz_data" in state["tool_outputs"]:
                 # 可以在这里做一些额外的格式化
                 pass
-                
+            # 记录测验统计
+            state["quiz_stats"] = state.get("quiz_stats", {})
+            state["quiz_stats"]["difficulty"] = state.get("difficulty_level", "medium")
+            
             duration_ms = (datetime.now() - node_started_at).total_seconds() * 1000
             state.setdefault("performance_data", {})["quiz_master_ms"] = duration_ms
             return state
@@ -257,17 +289,17 @@ class LearningWorkflowNodes:
             agent = self.agents["tool_specialist"]
             
             if agent.can_execute(agent_state):
-                agent_state = await agent.run(agent_state)
-                
+                agent_state = await self._run_agent(agent, agent_state, timeout=self.node_timeout, perf_key="tool_specialist_ms")
+            
             state = update_state_from_agent_state(state, agent_state)
-            state["next_step"] = "draft_writer"
+            state["next_step"] = "evidence_validator"
             
             duration_ms = (datetime.now() - node_started_at).total_seconds() * 1000
             state.setdefault("performance_data", {})["tool_specialist_ms"] = duration_ms
             return state
         except Exception as e:
             self.logger.error(f"ToolSpecialist node failed: {e}")
-            state["next_step"] = "draft_writer"
+            state["next_step"] = "evidence_validator"
             return state
 
     async def draft_writer_node(self, state: LearningWorkflowState) -> LearningWorkflowState:
@@ -278,9 +310,12 @@ class LearningWorkflowNodes:
             
             agent_state = state_to_agent_state(state)
             agent = self.agents["draft_writer"]
+            # 仅使用已验证证据
+            if getattr(agent_state, "validated_docs", None):
+                agent_state.retrieved_docs = agent_state.validated_docs
             
             if agent.can_execute(agent_state):
-                agent_state = await agent.run(agent_state)
+                agent_state = await self._run_agent(agent, agent_state, timeout=self.node_timeout, perf_key="draft_writer_ms")
             
             state = update_state_from_agent_state(state, agent_state)
             state["next_step"] = "reviewer"
@@ -305,7 +340,14 @@ class LearningWorkflowNodes:
             agent = self.agents["reviewer"]
             
             if agent.can_execute(agent_state):
-                agent_state = await agent.run(agent_state)
+                agent_state = await self._run_agent(agent, agent_state, timeout=self.node_timeout, perf_key="reviewer_ms")
+            
+            # 简单安全过滤：禁止空草稿或含明显违规标记
+            draft = agent_state.draft_content or state.get("draft_content", "")
+            banned = ["暴力", "仇恨", "不适宜"]
+            if any(word in draft for word in banned):
+                agent_state.is_satisfactory = False
+                agent_state.critique = (agent_state.critique or "") + " 内容包含敏感词，已拦截。"
             
             state = update_state_from_agent_state(state, agent_state)
             
@@ -346,12 +388,12 @@ class LearningWorkflowNodes:
             agent = self.agents["knowledge_manager"]
             
             if agent.can_execute(agent_state):
-                agent_state = await agent.run(agent_state)
+                agent_state = await self._run_agent(agent, agent_state, timeout=self.node_timeout, perf_key="knowledge_manager_ms")
             
             state = update_state_from_agent_state(state, agent_state)
             
-            # Tools 运行完通常汇聚到 DraftWriter
-            state["next_step"] = "draft_writer"
+            # Tools 运行完通常先汇聚到证据验证
+            state["next_step"] = "evidence_validator"
             
             duration_ms = (datetime.now() - node_started_at).total_seconds() * 1000
             state.setdefault("performance_data", {})["knowledge_manager_ms"] = duration_ms
@@ -359,7 +401,7 @@ class LearningWorkflowNodes:
         except Exception as e:
             self.logger.error(f"KnowledgeManager node failed: {e}")
             state["error_info"] = {"type": "knowledge_manager_error", "message": str(e)}
-            state["next_step"] = "draft_writer" # 失败降级，继续生成
+            state["next_step"] = "evidence_validator" # 失败降级，继续生成
             return state
 
     async def socratic_guide_node(self, state: LearningWorkflowState) -> LearningWorkflowState:
@@ -372,7 +414,19 @@ class LearningWorkflowNodes:
             agent = self.agents["socratic_guide"]
             
             if agent.can_execute(agent_state):
-                agent_state = await agent.run(agent_state)
+                agent_state = await self._run_agent(agent, agent_state, timeout=self.node_timeout, perf_key="socratic_guide_ms")
+            
+            # 限制总提问轮次，动态调整难度
+            max_rounds = max(3, min(8, state.get("max_conversation_rounds", 10)))
+            if agent_state.conversation_round > max_rounds:
+                state["socratic_guidance"]["next_steps"] = ["switch_to_summary"]
+                state["next_step"] = "draft_writer"
+            else:
+                # 若理解度低则降低难度
+                if agent_state.understanding_level.level_value < 2:
+                    state["difficulty_level"] = "easy"
+                elif agent_state.understanding_level.level_value >= 3:
+                    state["difficulty_level"] = "medium"
             
             state = update_state_from_agent_state(state, agent_state)
             state["next_step"] = "draft_writer"
@@ -411,6 +465,36 @@ class LearningWorkflowNodes:
             state["next_step"] = "draft_writer"
             return state
     
+    async def evidence_validator_node(self, state: LearningWorkflowState) -> LearningWorkflowState:
+        """轻量证据验证节点：聚合多源检索结果，筛选可用证据"""
+        try:
+            node_started_at = datetime.now()
+            self.logger.info("[Node] EvidenceValidator: 聚合并筛选证据")
+
+            retrieved = state.get("retrieved_docs", []) or state.get("validated_docs", [])
+            validated = []
+            seen = set()
+            for doc in retrieved:
+                key = str(doc)[:200]
+                if key in seen:
+                    continue
+                seen.add(key)
+                validated.append(doc)
+                if len(validated) >= 5:
+                    break
+
+            state["validated_docs"] = validated
+            state["evidence_used"] = validated
+            state["next_step"] = "draft_writer"
+
+            duration_ms = (datetime.now() - node_started_at).total_seconds() * 1000
+            state.setdefault("performance_data", {})["evidence_validator_ms"] = duration_ms
+            return state
+        except Exception as e:
+            self.logger.error(f"EvidenceValidator node failed: {e}")
+            state["next_step"] = "draft_writer"
+            return state
+
     async def conclusion_node(self, state: LearningWorkflowState) -> LearningWorkflowState:
         """结论节点"""
         try:

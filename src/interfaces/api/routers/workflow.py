@@ -29,6 +29,7 @@ from ..dependencies import (
     validate_user_id,
     validate_query,
 )
+from ..utils import workflow_limiter
 # 直接使用 LangGraph 工作流
 from src.core.workflow import LangGraphLearningWorkflow
 
@@ -183,11 +184,13 @@ async def start_learning_session(
             "preferences": request.user_preferences or {},
         }
         
-        result = await workflow.process_query(
-            user_query=query,
-            session_id=session_id,
-            user_context=user_context,
-            workflow_config=workflow_config,
+        result = await workflow_limiter.run(
+            workflow.process_query(
+                user_query=query,
+                session_id=session_id,
+                user_context=user_context,
+                workflow_config=workflow_config,
+            )
         )
         
         # 检查工作流执行结果
@@ -377,10 +380,12 @@ async def continue_learning_session(
         # 继续工作流
         logger.info(f"继续执行工作流 - session_id={session_id}")
         
-        result = await workflow.continue_session(
-            session_id=session_id,
-            user_id=user_id,
-            user_response=user_response,
+        result = await workflow_limiter.run(
+            workflow.continue_session(
+                session_id=session_id,
+                user_id=user_id,
+                user_response=user_response,
+            )
         )
         
         # 检查执行结果

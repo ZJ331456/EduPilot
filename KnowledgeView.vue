@@ -67,7 +67,7 @@
               </div>
               <div>
                 <h3 class="card-title">搜索结果</h3>
-                <p class="card-subtitle">找到 {{ searchResults.length }} 条相关内容</p>
+                找到 {{ searchResults.length }} 条相关内容</p>
               </div>
             </div>
             <div class="result-stats">

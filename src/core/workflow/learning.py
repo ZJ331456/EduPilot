@@ -96,6 +96,7 @@ class LangGraphLearningWorkflow:
             workflow.add_node("knowledge_manager", self.nodes.knowledge_manager_node)
             workflow.add_node("socratic_guide", self.nodes.socratic_guide_node)
             workflow.add_node("memory_manager", self.nodes.memory_manager_node)
+            workflow.add_node("evidence_validator", self.nodes.evidence_validator_node)
             workflow.add_node("conclusion", self.nodes.conclusion_node)
             workflow.add_node("error_handler", self.nodes.error_handler_node)
             
@@ -125,15 +126,13 @@ class LangGraphLearningWorkflow:
                 }
             )
             
-            # Tools -> DraftWriter (Fan-in)
-            # 暂时所有工具执行完都去 DraftWriter
-            # 如果需要并行，这里应该用 END 或合并节点，LangGraph 的 fan-in 比较隐式
-            # 这里简化为串行流向：Tool -> DraftWriter
-            workflow.add_edge("knowledge_manager", "draft_writer")
-            workflow.add_edge("tool_specialist", "draft_writer")
+            # Tools -> EvidenceValidator -> DraftWriter (Fan-in)
+            workflow.add_edge("knowledge_manager", "evidence_validator")
+            workflow.add_edge("tool_specialist", "evidence_validator")
             workflow.add_edge("curriculum_designer", "draft_writer")
             workflow.add_edge("socratic_guide", "draft_writer")
             workflow.add_edge("memory_manager", "draft_writer")
+            workflow.add_edge("evidence_validator", "draft_writer")
             
             # CurriculumDesigner -> DraftWriter (Already handled by add_edge above, but keeping routing conditional if needed)
             # workflow.add_conditional_edges(
@@ -240,8 +239,12 @@ class LangGraphLearningWorkflow:
             # 记录开始时间
             start_time = datetime.now()
             
-            # 执行 LangGraph 工作流
-            result = await self._execute_graph_workflow(initial_state)
+            # 执行 LangGraph 工作流（增加超时保护）
+            timeout_seconds = effective_config.get("timeout_seconds", self.workflow_config.get("timeout_seconds", 300))
+            result = await asyncio.wait_for(
+                self._execute_graph_workflow(initial_state),
+                timeout=timeout_seconds
+            )
             
             # 更新会话信息
             self.active_sessions[session_id] = {
@@ -255,6 +258,13 @@ class LangGraphLearningWorkflow:
             
             return result
             
+        except asyncio.TimeoutError:
+            self.logger.error(f"工作流执行超时（>{effective_config.get('timeout_seconds', self.workflow_config.get('timeout_seconds', 300))}s）")
+            return {
+                "success": False,
+                "error": "工作流超时，请缩短输入或稍后重试",
+                "session_id": session_id
+            }
         except Exception as e:
             self.logger.error(f"处理查询失败: {e}")
             return {
@@ -356,7 +366,11 @@ class LangGraphLearningWorkflow:
             # 注意：用户响应后，从头开始执行完整工作流
             # 这样可以重新分析用户的理解程度并制定新计划
             # 优化方向：未来可以考虑直接从 planner 开始以提高效率
-            result = await self._execute_graph_workflow(current_state)
+            timeout_seconds = self.workflow_config.get("timeout_seconds", 300)
+            result = await asyncio.wait_for(
+                self._execute_graph_workflow(current_state),
+                timeout=timeout_seconds
+            )
             
             # 更新会话信息
             session_info["current_step"] = result.get("current_step", "unknown")
@@ -368,6 +382,13 @@ class LangGraphLearningWorkflow:
             
             return result
             
+        except asyncio.TimeoutError:
+            self.logger.error(f"继续会话超时（>{self.workflow_config.get('timeout_seconds', 300)}s）")
+            return {
+                "success": False,
+                "error": "会话处理超时，请稍后重试",
+                "session_id": session_id
+            }
         except Exception as e:
             self.logger.error(f"继续会话失败: {e}")
             return {

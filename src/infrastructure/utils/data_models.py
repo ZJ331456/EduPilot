@@ -63,11 +63,19 @@ class AgentState:
     # 学习和反馈相关
     learning_feedback: Optional[Dict[str, Any]] = None
     knowledge_updates: List[Dict[str, Any]] = field(default_factory=list)
+
+    # 学习画像 / 目标
+    goal_type: str = "general"              # 学习目标类型，如 exam / concept / project
+    skill_level: str = "unknown"            # 学习者当前水平，如 beginner/intermediate/advanced
+    difficulty_level: str = "medium"        # 期望难度，用于题目/提问调度
     
     # 数据槽位
     retrieved_docs: List[Any] = field(default_factory=list)  # RAG结果
+    validated_docs: List[Any] = field(default_factory=list)  # 经验证的证据
     tool_outputs: Dict[str, Any] = field(default_factory=dict)  # 工具运行结果
     curriculum_plan: Dict[str, Any] = field(default_factory=dict)  # 课程结构
+    evidence_used: List[Dict[str, Any]] = field(default_factory=list)  # 生成时引用的证据
+    quiz_stats: Dict[str, Any] = field(default_factory=dict)  # 测验表现数据
     
     # 审核槽位
     draft_content: str = ""  # 初稿

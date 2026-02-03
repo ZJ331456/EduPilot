@@ -309,10 +309,19 @@ echo 复制文件到仓库...
         
         for file_info in files_info:
             size_mb = file_info['size'] / (1024 * 1024)
+            relative_path = file_info['relative_path']
+            # 转换为 Windows 路径格式
+            win_path = relative_path.replace("/", "\\")
+            # 获取目录路径
+            dir_path = win_path.rsplit("\\", 1)[0] if "\\" in win_path else ""
+            
             if size_mb > max_file_size_mb:
-                bat_content += f'\ngit lfs track "{file_info["relative_path"]}"\n'
-            bat_content += f'mkdir "{file_info["relative_path"].rsplit("\\\\", 1)[0]}" 2>nul\n'
-            bat_content += f'copy "..\\metadata\\{file_info["relative_path"].replace("/", "\\\\")}" "{file_info["relative_path"].replace("/", "\\\\")}"\n'
+                bat_content += f'\ngit lfs track "{relative_path}"\n'
+            
+            if dir_path:
+                bat_content += f'mkdir "{dir_path}" 2>nul\n'
+            
+            bat_content += f'copy "..\\metadata\\{win_path}" "{win_path}"\n'
         
         bat_content += """
 REM 提交更改

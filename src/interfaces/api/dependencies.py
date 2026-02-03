@@ -44,6 +44,7 @@ class APIState:
         self.agent_registry: Optional[AgentRegistry] = None
         self.start_time: Optional[float] = None
         self.request_count: int = 0
+        self.session_cleanup_task: Optional[Any] = None
         
         # 性能统计
         self.stats = {

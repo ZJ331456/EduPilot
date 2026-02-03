@@ -10,7 +10,7 @@
         </router-view>
       </template>
 
-      <!-- 带有侧边栏的布局模式（其他页面） -->
+      <!-- 带侧边栏的布局模式（其他页面） -->
       <el-container v-else class="layout-container">
         <!-- 侧边导航栏 -->
         <el-aside width="260px" class="app-sidebar">
@@ -20,7 +20,7 @@
             </div>
             <div class="logo-text">
               <span class="title">EduPilot</span>
-              <span class="subtitle">智能学习伙伴</span>
+              <span class="subtitle">智能学习助理</span>
             </div>
           </div>
 
@@ -71,7 +71,7 @@
         </el-aside>
 
         <el-container>
-          <!-- 顶部极简 Header -->
+          <!-- 顶部栏 Header -->
           <el-header class="app-header">
             <div class="header-left">
               <span class="page-title">{{ currentPageTitle }}</span>
@@ -135,7 +135,7 @@ const currentPageTitle = computed(() => {
     '/knowledge': '知识检索',
     '/profile': '用户画像',
     '/performance': '性能监控',
-    '/workbench': '沉浸式工作台'
+    '/workbench': '学习工作台'
   }
   return map[route.path] || 'EduPilot'
 })
@@ -146,81 +146,48 @@ onMounted(() => {
 </script>
 
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-
-:root {
-  /* 简约白主题配色 */
-  --primary-color: #4f46e5;      /* Indigo 600 - 专业、现代 */
-  --primary-light: #818cf8;
-  --primary-fade: #eef2ff;       /* 极浅的靛蓝背景 */
-  
-  --bg-body: #f9fafb;            /* 浅灰背景，保护视力 */
-  --bg-white: #ffffff;
-  
-  --text-primary: #111827;       /* 深灰几近黑 */
-  --text-secondary: #6b7280;     /* 中灰 */
-  --text-tertiary: #9ca3af;      /* 浅灰 */
-  
-  --border-color: #e5e7eb;
-  --border-hover: #d1d5db;
-  
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-}
-
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-body {
-  background-color: var(--bg-body);
-  color: var(--text-primary);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-}
-
 #app {
   height: 100vh;
   width: 100vw;
   overflow: hidden;
+  background: #f7f7f7;
+  position: relative;
 }
 
 .layout-container {
   height: 100%;
+  position: relative;
+  z-index: 1;
 }
 
 /* 侧边栏样式 */
 .app-sidebar {
-  background-color: var(--bg-white);
-  border-right: 1px solid var(--border-color);
+  background: #ffffff;
+  border-right: 1px solid #e5e5e5;
   display: flex;
   flex-direction: column;
-  transition: all 0.3s ease;
   z-index: 20;
 }
 
 .sidebar-header {
-  height: 80px;
+  height: 76px;
   display: flex;
   align-items: center;
-  padding: 0 24px;
+  padding: 0 22px;
   gap: 12px;
-  border-bottom: 1px solid transparent;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .logo-wrapper {
-  width: 36px;
-  height: 36px;
-  background: var(--primary-color);
-  border-radius: 8px;
+  width: 40px;
+  height: 40px;
+  background: #000000;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
   font-size: 20px;
-  box-shadow: var(--shadow-md);
 }
 
 .logo-text {
@@ -229,70 +196,75 @@ body {
 }
 
 .logo-text .title {
-  font-weight: 700;
-  font-size: 18px;
-  color: var(--text-primary);
+  font-weight: 800;
+  font-size: 17px;
+  color: #000000;
   line-height: 1.2;
+  letter-spacing: -0.5px;
 }
 
 .logo-text .subtitle {
   font-size: 11px;
-  color: var(--text-secondary);
+  color: #888888;
   font-weight: 500;
+  margin-top: 2px;
 }
 
 .sidebar-menu {
   border-right: none !important;
   flex: 1;
-  padding: 16px 12px;
+  padding: 20px 14px;
   background-color: transparent !important;
 }
 
 .el-menu-item {
-  border-radius: 8px;
-  margin-bottom: 4px;
-  height: 48px;
-  color: var(--text-secondary) !important;
+  border-radius: 10px;
+  margin-bottom: 2px;
+  height: 46px;
+  color: #666666 !important;
   font-weight: 500;
+  font-size: 14px;
+  transition: all 0.2s ease;
 }
 
 .el-menu-item:hover {
-  background-color: var(--bg-body) !important;
-  color: var(--text-primary) !important;
+  background-color: #f5f5f5 !important;
+  color: #000000 !important;
 }
 
 .el-menu-item.is-active {
-  background-color: var(--primary-fade) !important;
-  color: var(--primary-color) !important;
-  font-weight: 600;
+  background: #000000 !important;
+  color: #ffffff !important;
 }
 
 .el-menu-item .el-icon {
   font-size: 18px;
-  margin-right: 10px;
+  margin-right: 12px;
 }
 
 .sidebar-footer {
-  padding: 20px;
-  border-top: 1px solid var(--border-color);
+  padding: 16px;
+  border-top: 1px solid #e5e5e5;
 }
 
 .user-card {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 10px;
-  border-radius: 10px;
+  padding: 12px 14px;
+  border-radius: 12px;
   transition: all 0.2s ease;
   cursor: pointer;
+  background: #f5f5f5;
+  border: 1px solid transparent;
 }
 
 .user-card:hover {
-  background-color: var(--bg-body);
+  background: #eeeeee;
 }
 
 .user-avatar {
-  background-color: var(--primary-light);
+  background: #000000 !important;
   color: white;
 }
 
@@ -302,84 +274,105 @@ body {
 }
 
 .user-name {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
-  color: var(--text-primary);
+  color: #000000;
 }
 
 .user-status {
-  font-size: 12px;
-  color: #10b981; /* Green */
+  font-size: 11px;
+  color: #666666;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.user-status::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  background: #000000;
+  border-radius: 50%;
 }
 
 /* 顶部 Header 样式 */
 .app-header {
-  background-color: var(--bg-white);
-  border-bottom: 1px solid var(--border-color);
-  height: 64px !important;
+  background: #ffffff;
+  border-bottom: 1px solid #e5e5e5;
+  height: 60px !important;
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 32px;
   z-index: 10;
+  position: sticky;
+  top: 0;
 }
 
 .page-title {
-  font-size: 18px;
+  font-size: 15px;
   font-weight: 600;
-  color: var(--text-primary);
+  color: #000000;
+  letter-spacing: -0.3px;
 }
 
 .header-right {
   display: flex;
   align-items: center;
-  gap: 24px;
+  gap: 14px;
 }
 
 .status-indicator {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  color: var(--text-secondary);
+  gap: 8px;
+  font-size: 12px;
+  color: #666666;
+  padding: 6px 14px;
+  background: #f5f5f5;
+  border-radius: 20px;
 }
 
 .status-indicator .dot {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
-  background-color: #d1d5db;
+  background-color: #cccccc;
 }
 
 .status-indicator .dot.active {
-  background-color: #10b981;
-  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+  background-color: #000000;
 }
 
 .metric-badge {
-  background-color: var(--bg-body);
-  padding: 4px 12px;
-  border-radius: 99px;
+  background: #f5f5f5;
+  padding: 6px 14px;
+  border-radius: 20px;
   font-size: 12px;
-  color: var(--text-secondary);
-  border: 1px solid var(--border-color);
+  color: #666666;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.metric-badge .label {
+  color: #888888;
 }
 
 .metric-badge .value {
   font-weight: 600;
-  color: var(--text-primary);
-  margin-left: 4px;
+  color: #000000;
 }
 
 /* 主内容区 */
 .app-main {
-  background-color: var(--bg-body);
-  padding: 32px;
-  height: calc(100vh - 64px);
+  background: #f7f7f7;
+  padding: 28px 32px;
+  height: calc(100vh - 60px);
   overflow-y: auto;
 }
 
-/* 页面切换动画 - 简约版 */
+/* 页面切换动画 - 轻量版 */
 .fade-slide-enter-active,
 .fade-slide-leave-active {
   transition: opacity 0.3s ease, transform 0.3s ease;
@@ -406,11 +399,11 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #d1d5db;
+  background: rgba(15, 23, 42, 0.16);
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #9ca3af;
+  background: rgba(15, 23, 42, 0.28);
 }
 </style>

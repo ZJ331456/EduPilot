@@ -6,16 +6,17 @@ FastAPI应用配置和路由注册
 """
 
 import time
+import asyncio
 import logging
 from contextlib import asynccontextmanager
 from datetime import datetime
 from typing import Dict, Any
 
 from fastapi import FastAPI, Request, status
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import RequestValidationError
-
+from .config import get_settings
 from .dependencies import get_api_state, APIState
 from .models import HealthCheckResponse, ErrorResponse
 from .middleware import response_cache, rate_limiter, performance_monitor
@@ -31,6 +32,12 @@ logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
 )
 logger = logging.getLogger("EduPilotAPI")
+settings = get_settings()
+# 将动态配置同步到工具实例
+response_cache.ttl = settings.cache_ttl_seconds
+response_cache.max_entries = settings.cache_max_entries
+rate_limiter.rate = settings.rate_limit_per_minute
+rate_limiter.per = 60
 
 
 # ============================================================================
@@ -166,6 +173,10 @@ async def lifespan(app: FastAPI):
     api_state = get_api_state()
     api_state.start_time = time.time()
     
+    # 启动后台会话清理任务
+    if api_state.session_cleanup_task is None:
+        api_state.session_cleanup_task = asyncio.create_task(_session_cleanup_loop(api_state))
+    
     # 初始化工作流（延迟加载）
     logger.info("✅ API 已就绪，等待请求...")
     
@@ -177,6 +188,13 @@ async def lifespan(app: FastAPI):
     # 清理资源
     if api_state.workflow_instance:
         logger.info("清理工作流资源...")
+    
+    if api_state.session_cleanup_task:
+        api_state.session_cleanup_task.cancel()
+        try:
+            await api_state.session_cleanup_task
+        except asyncio.CancelledError:
+            pass
     
     logger.info("👋 API 已关闭")
 
@@ -198,6 +216,21 @@ app = FastAPI(
 # 立即注册路由
 register_routers(app)
 
+# 后台会话清理任务
+async def _session_cleanup_loop(api_state: APIState):
+    """后台定期清理过期会话，避免内存占用"""
+    try:
+        interval = max(int(settings.session_ttl_hours * 3600 / 3), 600)
+    except Exception:
+        interval = 1800
+    while True:
+        await asyncio.sleep(interval)
+        try:
+            if api_state.workflow_instance:
+                api_state.workflow_instance.cleanup_expired_sessions(settings.session_ttl_hours)
+        except Exception as e:
+            logger.warning(f"会话清理失败: {e}")
+
 
 # ============================================================================
 # 中间件配置
@@ -206,7 +239,7 @@ register_routers(app)
 # CORS中间件
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # 生产环境应该限制具体域名
+    allow_origins=settings.cors_origins,  # 生产环境建议限制具体域名
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -218,6 +251,52 @@ app.add_middleware(
 #     permission_middleware,
 #     enable_permission_check=False,
 # )
+
+
+# 闭环限流
+@app.middleware("http")
+async def rate_limit_middleware(request: Request, call_next):
+    identifier = request.headers.get("X-Forwarded-For") or (request.client.host if request.client else "unknown")
+    if not rate_limiter.is_allowed(identifier):
+        return JSONResponse(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            content={
+                "success": False,
+                "message": "请求过于频繁，请稍后再试",
+                "error_code": "RATE_LIMITED",
+            },
+        )
+    return await call_next(request)
+
+
+# 轻量缓存只作用于 GET 的健康/统计类接口
+@app.middleware("http")
+async def cache_get_requests(request: Request, call_next):
+    if not settings.cache_enabled or request.method != "GET":
+        return await call_next(request)
+    
+    cacheable_prefixes = ("/api/agent/v1/health", "/api/agent/v1/stats")
+    if not any(request.url.path.startswith(prefix) for prefix in cacheable_prefixes):
+        return await call_next(request)
+    
+    cache_key = response_cache.get_cache_key(request)
+    cached = response_cache.get(cache_key)
+    if cached:
+        headers, body, status_code, media_type = cached
+        return Response(content=body, status_code=status_code, headers=headers, media_type=media_type)
+    
+    response = await call_next(request)
+    content_type = response.headers.get("content-type", "")
+    if response.status_code < 300 and "text/event-stream" not in content_type:
+        body = b"".join([chunk async for chunk in response.body_iterator])
+        response = Response(
+            content=body,
+            status_code=response.status_code,
+            headers=dict(response.headers),
+            media_type=response.media_type,
+        )
+        response_cache.set(cache_key, (dict(response.headers), body, response.status_code, response.media_type))
+    return response
 
 
 # 请求日志中间件
@@ -250,6 +329,12 @@ async def log_requests(request: Request, call_next):
         # 添加响应头
         response.headers["X-Process-Time"] = str(duration)
         response.headers["X-Request-ID"] = str(api_state.request_count)
+        
+        # 更新平均耗时 & 性能监控
+        total = max(api_state.stats["total_requests"], 1)
+        prev_avg = api_state.stats.get("average_response_time", 0.0)
+        api_state.stats["average_response_time"] = ((prev_avg * (total - 1)) + duration) / total
+        performance_monitor.record_request(request.url.path, duration, response.status_code, settings.slow_request_ms)
         
         # 更新统计
         if response.status_code < 400:
@@ -395,6 +480,7 @@ async def get_cache_stats():
         "data": {
             "cache_size": cache_size,
             "cache_ttl": response_cache.ttl,
+            "cache_limit": response_cache.max_entries,
         },
         "timestamp": datetime.now().isoformat(),
     }
