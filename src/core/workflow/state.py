@@ -1,443 +1,286 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-LangGraph 状态定义
-基于现有 AgentState 重构为 LangGraph 兼容的状态
+EduPilot v4 — LangGraph 工作流状态定义
+
+v4 架构核心改进：
+- 消除双状态转换（AgentState ↔ LearningWorkflowState），所有 Agent 直接操作此字典
+- 引入 task_plan 统一规划输出（替代 plan + interpretation + retrieval_decision 三字段）
+- 引入 knowledge_context 汇总知识检索结果（替代 retrieved_docs + validated_docs + tool_outputs）
+- teaching_output 承载教学内容（替代 draft_content + socratic_guidance + curriculum_plan）
+- evaluation_output 承载评估结果（替代 critique + quiz_stats + is_satisfactory）
+- 保留 API 兼容字段，通过节点内联写入确保前端无感升级
 """
 
-from typing import Dict, Any, List, Optional, TypedDict, Annotated, TYPE_CHECKING
-from datetime import datetime
+from __future__ import annotations
+
 import operator
+import uuid
+import time
+from typing import Any, Annotated, Dict, List, Optional, TypedDict
 
-from src.infrastructure.utils.enums import (
-    QueryType, ExecutionStatus, ConversationStage, UnderstandingLevel
-)
 
-if TYPE_CHECKING:
-    from src.infrastructure.utils.data_models import AgentState
-
+# ---------------------------------------------------------------------------
+# v4 核心状态（直接供所有 Agent/Service 节点读写，无需 AgentState 转换）
+# ---------------------------------------------------------------------------
 
 class LearningWorkflowState(TypedDict):
-    """学习工作流状态 - LangGraph 兼容
-    
-    统一的工作流状态定义，用于整个系统。
-    之前的 WorkflowState 和 LearningWorkflowState 已合并为此类。
+    """EduPilot v4 统一工作流状态
+
+    设计原则：
+    1. 扁平化 — 字段直接可读，无需 .get("xxx").get("yyy")
+    2. 按阶段分区 — 规划 / 知识 / 教学 / 评估 / 记忆 / 系统
+    3. API 向后兼容 — 保留 v3 中被 API 层读取的字段别名
     """
-    
-    # 基础信息
+
+    # ── 基础 ──────────────────────────────────────────────────────────────
     session_id: str
     timestamp: float
-    
-    # 用户输入和查询信息
+    user_id: Optional[str]
+
+    # ── 用户输入 ──────────────────────────────────────────────────────────
     user_query: str
-    interpretation: Optional[Dict[str, Any]]
-    query_type: Optional[str]  # QueryType enum as string
-    
-    # 知识检索相关
-    retrieved_knowledge: Optional[Dict[str, Any]]
-    knowledge_sources: List[str]
-    retrieval_decision: Optional[Dict[str, Any]]
-    
-    # 苏格拉底对话相关
-    socratic_question: str
-    socratic_questions: List[str]
-    user_response: str
-    user_responses: List[str]
-    dialogue_history: List[Dict[str, str]]
-    socratic_guidance: Dict[str, Any]
-    
-    # 对话状态管理
-    conversation_stage: str  # ConversationStage enum as string
-    understanding_level: str  # UnderstandingLevel enum as string
+    user_response: str                          # 多轮对话中用户的当前回复
+    user_responses: List[str]                   # 历史回复列表
+    user_context: Dict[str, Any]                # 前端传入的用户上下文
+
+    # ── 对话历史 ──────────────────────────────────────────────────────────
+    dialogue_history: List[Dict[str, Any]]      # [{role, content, timestamp, round}]
     conversation_round: int
     max_conversation_rounds: int
-    target_understanding_level: str  # UnderstandingLevel enum as string
-    conversation_context: Dict[str, Any]
-    user_context: Dict[str, Any]
-    
-    # 学习进度追踪
+
+    # ══ v4 阶段一：规划层 ═════════════════════════════════════════════════
+    # LearningPlanner 输出，替代 v3 的 plan + interpretation + retrieval_decision
+    task_plan: Optional[Dict[str, Any]]
+    # task_plan schema:
+    # {
+    #   "intent": str,           # concept_explanation|socratic_dialogue|practice|direct_answer|smalltalk
+    #   "strategy": str,         # explain|socratic|curriculum|direct
+    #   "need_retrieval": bool,
+    #   "need_assessment": bool,
+    #   "core_concepts": List[str],
+    #   "difficulty": str,       # beginner|intermediate|advanced
+    #   "learning_goal": str,
+    #   "routing": str,          # "knowledge" | "teaching"（下一节点决策）
+    #   "reasoning": str,        # 规划思路（调试用）
+    # }
+
+    # ══ v4 阶段二：知识层 ═════════════════════════════════════════════════
+    # KnowledgeEngine service 输出，替代 retrieved_docs + validated_docs + tool_outputs
+    knowledge_context: Optional[Dict[str, Any]]
+    # knowledge_context schema:
+    # {
+    #   "retrieved_chunks": List[Dict],   # [{content, source, relevance_score}]
+    #   "tool_results": Dict[str, Any],   # 工具调用结果
+    #   "sources": List[str],
+    #   "retrieval_strategy": str,
+    #   "total_tokens": int,
+    # }
+
+    # ══ v4 阶段三：教学层 ═════════════════════════════════════════════════
+    # TeachingAgent 输出，替代 draft_content + socratic_guidance + curriculum_plan
+    teaching_output: Optional[Dict[str, Any]]
+    # teaching_output schema:
+    # {
+    #   "mode": str,              # explain|socratic|curriculum|direct
+    #   "content": str,           # 主要输出文本（对应 v3 draft_content）
+    #   "socratic_question": str, # 苏格拉底问题（mode=socratic 时）
+    #   "curriculum": Dict,       # 课程结构（mode=curriculum 时）
+    #   "follow_up_hints": List[str],
+    # }
+
+    # ══ v4 阶段四：评估层 ═════════════════════════════════════════════════
+    # EvaluationAgent 输出，替代 critique + quiz_stats + is_satisfactory
+    evaluation_output: Optional[Dict[str, Any]]
+    # evaluation_output schema:
+    # {
+    #   "quality_score": float,   # 0.0 ~ 1.0
+    #   "is_satisfactory": bool,
+    #   "critique": str,
+    #   "revision_needed": bool,
+    #   "quiz": Optional[Dict],   # 测验题目
+    #   "feedback": str,
+    # }
+
+    # ══ v4 阶段五：记忆层 ════════════════════════════════════════════════
+    memory_updated: bool                        # 是否已完成记忆写入
+    student_profile: Optional[Dict[str, Any]]   # 读入的学生画像（供 Teacher 使用）
+    memory_analysis: Optional[Dict[str, Any]]   # MemorySystem 分析结果
+
+    # ── 系统控制 ──────────────────────────────────────────────────────────
+    messages: Annotated[List[Dict[str, str]], operator.add]  # LangGraph 消息累加
+    next_step: Optional[str]
+    workflow_complete: bool
+    waiting_for_user: bool
+    error_info: Optional[Dict[str, Any]]
+    metadata: Dict[str, Any]
+    performance_data: Dict[str, Any]
+
+    # ── API 兼容别名（v3 → v4 映射，由节点同步写入）─────────────────────
+    # 以下字段供 API 层 / 前端读取，由各节点在写 v4 字段后同步填充
+    interpretation: Optional[Dict[str, Any]]    # ← task_plan
+    query_type: Optional[str]                   # ← task_plan.intent
+    plan: Optional[Dict[str, Any]]              # ← task_plan
+    retrieval_decision: Optional[Dict[str, Any]] # ← task_plan.need_retrieval
+    draft_content: str                           # ← teaching_output.content
+    critique: str                                # ← evaluation_output.critique
+    is_satisfactory: bool                        # ← evaluation_output.is_satisfactory
+    revision_count: int
+    socratic_question: str                       # ← teaching_output.socratic_question
+    socratic_questions: List[str]
+    socratic_guidance: Dict[str, Any]            # ← teaching_output
+    curriculum_plan: Dict[str, Any]              # ← teaching_output.curriculum
+    tool_outputs: Dict[str, Any]                 # ← knowledge_context.tool_results
+    retrieved_docs: List[Any]                    # ← knowledge_context.retrieved_chunks
+    validated_docs: List[Any]
+    evidence_used: List[Dict[str, Any]]
+    quiz_stats: Dict[str, Any]                   # ← evaluation_output.quiz
+    execution_result: Optional[Dict[str, Any]]
+    learning_feedback: Optional[Dict[str, Any]]  # ← memory_analysis
+    conversation_stage: str
+    understanding_level: str
+    knowledge_sources: List[str]
+    # 用户画像快照（规划时读入）
+    skill_level: str
+    difficulty_level: str
+    goal_type: str
+    key_concepts_covered: List[str]
     learning_objectives: List[str]
     achieved_objectives: List[str]
     current_focus: str
-    key_concepts_covered: List[str]
-    goal_type: str
-    skill_level: str
-    difficulty_level: str
-    
-    # 规划和执行相关
-    plan: Optional[Dict[str, Any]]
-    execution_result: Optional[Dict[str, Any]]
-    execution_status: str  # ExecutionStatus enum as string
-    
-    # 学习和反馈相关
-    learning_feedback: Optional[Dict[str, Any]]
-    knowledge_updates: List[Dict[str, Any]]
-    
-    # 元数据
-    metadata: Dict[str, Any]
-    error_info: Optional[Dict[str, Any]]
-    feature_flags: Dict[str, Any]
-    experiment_tags: List[str]
 
-    # 数据槽位
-    retrieved_docs: List[Any]  # RAG结果
-    validated_docs: List[Any]
-    tool_outputs: Dict[str, Any]  # 工具运行结果
-    curriculum_plan: Dict[str, Any]  # 课程结构
-    evidence_used: List[Dict[str, Any]]
-    quiz_stats: Dict[str, Any]
-    
-    # 审核槽位
-    draft_content: str  # 初稿
-    critique: str  # 批评意见
-    is_satisfactory: bool  # 是否通过
-    revision_count: int  # 修改次数
-    
-    # LangGraph 特定字段
-    messages: Annotated[List[Dict[str, str]], operator.add]  # 消息历史
-    next_step: Optional[str]  # 下一步节点
-    workflow_complete: bool  # 工作流是否完成
-    waiting_for_user: bool  # 是否等待用户输入
-    
-    # 性能优化字段
-    cache: Dict[str, Any]
-    performance_data: Dict[str, Any]
-    execution_hints: Dict[str, Any]
 
+# ---------------------------------------------------------------------------
+# 工厂函数
+# ---------------------------------------------------------------------------
 
 def create_initial_state(
     user_query: str,
     session_id: Optional[str] = None,
-    user_context: Optional[Dict[str, Any]] = None
+    user_id: Optional[str] = None,
+    user_context: Optional[Dict[str, Any]] = None,
 ) -> LearningWorkflowState:
-    """创建初始状态"""
-    import uuid
-    import time
-    
+    """创建 v4 初始状态"""
     return LearningWorkflowState(
-        # 基础信息
+        # 基础
         session_id=session_id or str(uuid.uuid4()),
         timestamp=time.time(),
-        
-        # 用户输入和查询信息
+        user_id=user_id,
+
+        # 用户输入
         user_query=user_query,
-        interpretation=None,
-        query_type=None,
-        
-        # 知识检索相关
-        retrieved_knowledge=None,
-        knowledge_sources=[],
-        retrieval_decision=None,
-        
-        # 苏格拉底对话相关
-        socratic_question="",
-        socratic_questions=[],
         user_response="",
         user_responses=[],
+        user_context=user_context or {},
+
+        # 对话历史
         dialogue_history=[],
-        socratic_guidance={},
-        
-        # 对话状态管理
-        conversation_stage=ConversationStage.INITIAL_QUERY.value,
-        understanding_level=UnderstandingLevel.NO_UNDERSTANDING.value,
         conversation_round=0,
         max_conversation_rounds=10,
-        target_understanding_level=UnderstandingLevel.GOOD_UNDERSTANDING.value,
-        conversation_context={},
-        user_context=user_context or {},
-        
-        # 学习进度追踪
-        learning_objectives=[],
-        achieved_objectives=[],
-        current_focus="",
-        key_concepts_covered=[],
-        goal_type="general",
-        skill_level="unknown",
-        difficulty_level="medium",
-        
-        # 规划和执行相关
-        plan=None,
-        execution_result=None,
-        execution_status=ExecutionStatus.PENDING.value,
-        
-        # 学习和反馈相关
-        learning_feedback=None,
-        knowledge_updates=[],
-        
-        # 元数据
-        metadata={},
-        error_info=None,
-        feature_flags={},
-        experiment_tags=[],
 
-        # 数据槽位
-        retrieved_docs=[],
-        validated_docs=[],
-        tool_outputs={},
-        curriculum_plan={},
-        evidence_used=[],
-        quiz_stats={},
-        
-        # 审核槽位
-        draft_content="",
-        critique="",
-        is_satisfactory=False,
-        revision_count=0,
-        
-        # LangGraph 特定字段
+        # v4 阶段字段
+        task_plan=None,
+        knowledge_context=None,
+        teaching_output=None,
+        evaluation_output=None,
+
+        # 记忆层
+        memory_updated=False,
+        student_profile=None,
+        memory_analysis=None,
+
+        # 系统控制
         messages=[],
         next_step=None,
         workflow_complete=False,
         waiting_for_user=False,
-        
-        # 性能优化字段
-        cache={},
+        error_info=None,
+        metadata={},
         performance_data={},
-        execution_hints={}
+
+        # API 兼容别名（v3 字段默认值）
+        interpretation=None,
+        query_type=None,
+        plan=None,
+        retrieval_decision=None,
+        draft_content="",
+        critique="",
+        is_satisfactory=False,
+        revision_count=0,
+        socratic_question="",
+        socratic_questions=[],
+        socratic_guidance={},
+        curriculum_plan={},
+        tool_outputs={},
+        retrieved_docs=[],
+        validated_docs=[],
+        evidence_used=[],
+        quiz_stats={},
+        execution_result=None,
+        learning_feedback=None,
+        conversation_stage="initial_query",
+        understanding_level="no_understanding",
+        knowledge_sources=[],
+        skill_level="unknown",
+        difficulty_level="medium",
+        goal_type="general",
+        key_concepts_covered=[],
+        learning_objectives=[],
+        achieved_objectives=[],
+        current_focus="",
     )
 
 
-def state_to_agent_state(state: LearningWorkflowState) -> 'AgentState':
-    """将 LangGraph 状态转换为 AgentState"""
-    from src.infrastructure.utils.data_models import AgentState
-    
-    agent_state = AgentState()
-    
-    # 基础信息
-    agent_state.session_id = state["session_id"]
-    agent_state.timestamp = state["timestamp"]
-    
-    # 用户输入和查询信息
-    agent_state.user_query = state["user_query"]
-    agent_state.interpretation = state["interpretation"]
-    if state["query_type"]:
-        agent_state.query_type = QueryType(state["query_type"])
-    
-    # 知识检索相关
-    agent_state.retrieved_knowledge = state["retrieved_knowledge"]
-    agent_state.knowledge_sources = state["knowledge_sources"]
-    # 设置retrieval_decision属性
-    if hasattr(agent_state, 'retrieval_decision'):
-        agent_state.retrieval_decision = state.get("retrieval_decision")
-    
-    # 苏格拉底对话相关
-    agent_state.socratic_question = state["socratic_question"]
-    agent_state.socratic_questions = state["socratic_questions"]
-    agent_state.user_response = state["user_response"]
-    agent_state.user_responses = state["user_responses"]
-    agent_state.dialogue_history = state["dialogue_history"]
-    # 🔧 修复：添加 socratic_guidance 字段
-    if hasattr(agent_state, 'socratic_guidance'):
-        agent_state.socratic_guidance = state.get("socratic_guidance", {})
-    
-    # 对话状态管理
-    agent_state.conversation_stage = ConversationStage(state["conversation_stage"])
-    agent_state.understanding_level = UnderstandingLevel(state["understanding_level"])
-    agent_state.conversation_round = state["conversation_round"]
-    agent_state.max_conversation_rounds = state["max_conversation_rounds"]
-    agent_state.target_understanding_level = UnderstandingLevel(state["target_understanding_level"])
-    agent_state.conversation_context = state["conversation_context"]
-    agent_state.user_context = state["user_context"]
-    
-    # 学习进度追踪
-    agent_state.learning_objectives = state["learning_objectives"]
-    agent_state.achieved_objectives = state["achieved_objectives"]
-    agent_state.current_focus = state["current_focus"]
-    agent_state.key_concepts_covered = state["key_concepts_covered"]
-    agent_state.goal_type = state.get("goal_type", "general")
-    agent_state.skill_level = state.get("skill_level", "unknown")
-    agent_state.difficulty_level = state.get("difficulty_level", "medium")
-    
-    # 规划和执行相关
-    agent_state.plan = state["plan"]
-    agent_state.execution_result = state["execution_result"]
-    agent_state.execution_status = ExecutionStatus(state["execution_status"])
-    
-    # 学习和反馈相关
-    agent_state.learning_feedback = state["learning_feedback"]
-    agent_state.knowledge_updates = state["knowledge_updates"]
-    
-    # 元数据
-    agent_state.metadata = state["metadata"]
-    agent_state.error_info = state["error_info"]
-    agent_state.feature_flags = state.get("feature_flags", {})
-    agent_state.experiment_tags = state.get("experiment_tags", [])
-    
-    # 数据槽位
-    agent_state.retrieved_docs = state.get("retrieved_docs", [])
-    agent_state.validated_docs = state.get("validated_docs", [])
-    agent_state.tool_outputs = state.get("tool_outputs", {})
-    agent_state.curriculum_plan = state.get("curriculum_plan", {})
-    agent_state.evidence_used = state.get("evidence_used", [])
-    agent_state.quiz_stats = state.get("quiz_stats", {})
-    
-    # 审核槽位
-    agent_state.draft_content = state.get("draft_content", "")
-    agent_state.critique = state.get("critique", "")
-    agent_state.is_satisfactory = state.get("is_satisfactory", False)
-    agent_state.revision_count = state.get("revision_count", 0)
+def sync_compat_fields(state: LearningWorkflowState) -> None:
+    """将 v4 字段同步到 v3 兼容别名（in-place）
 
-    return agent_state
+    在每个主要节点末尾调用，保持 API 层无感升级。
+    """
+    # 规划层 → 兼容别名
+    if task_plan := state.get("task_plan"):
+        state["interpretation"] = task_plan
+        state["query_type"] = task_plan.get("intent")
+        state["plan"] = task_plan
+        state["retrieval_decision"] = {
+            "need_retrieval": task_plan.get("need_retrieval", False),
+            "core_concepts": task_plan.get("core_concepts", []),
+        }
+        state["difficulty_level"] = task_plan.get("difficulty", state.get("difficulty_level", "medium"))
+        state["goal_type"] = task_plan.get("intent", state.get("goal_type", "general"))
 
+    # 知识层 → 兼容别名
+    if kc := state.get("knowledge_context"):
+        state["retrieved_docs"] = kc.get("retrieved_chunks", [])
+        state["validated_docs"] = kc.get("retrieved_chunks", [])
+        state["evidence_used"] = kc.get("retrieved_chunks", [])
+        state["tool_outputs"] = kc.get("tool_results", {})
+        state["knowledge_sources"] = kc.get("sources", [])
 
-def agent_state_to_state(agent_state: 'AgentState') -> LearningWorkflowState:
-    """将 AgentState 转换为 LangGraph 状态"""
-    return LearningWorkflowState(
-        # 基础信息
-        session_id=agent_state.session_id,
-        timestamp=agent_state.timestamp,
-        
-        # 用户输入和查询信息
-        user_query=agent_state.user_query,
-        interpretation=agent_state.interpretation,
-        query_type=agent_state.query_type.value if agent_state.query_type else None,
-        
-        # 知识检索相关
-        retrieved_knowledge=agent_state.retrieved_knowledge,
-        knowledge_sources=agent_state.knowledge_sources,
-        retrieval_decision=getattr(agent_state, 'retrieval_decision', None),
-        
-        # 苏格拉底对话相关
-        socratic_question=agent_state.socratic_question,
-        socratic_questions=agent_state.socratic_questions,
-        user_response=agent_state.user_response,
-        user_responses=agent_state.user_responses,
-        dialogue_history=agent_state.dialogue_history,
-        # 🔧 修复：添加 socratic_guidance 字段
-        socratic_guidance=getattr(agent_state, 'socratic_guidance', {}),
-        
-        # 对话状态管理
-        conversation_stage=agent_state.conversation_stage.value,
-        understanding_level=agent_state.understanding_level.value,
-        conversation_round=agent_state.conversation_round,
-        max_conversation_rounds=agent_state.max_conversation_rounds,
-        target_understanding_level=agent_state.target_understanding_level.value,
-        conversation_context=agent_state.conversation_context,
-        user_context=agent_state.user_context,
-        
-        # 学习进度追踪
-        learning_objectives=agent_state.learning_objectives,
-        achieved_objectives=agent_state.achieved_objectives,
-        current_focus=agent_state.current_focus,
-        key_concepts_covered=agent_state.key_concepts_covered,
-        
-        # 规划和执行相关
-        plan=agent_state.plan,
-        execution_result=agent_state.execution_result,
-        execution_status=agent_state.execution_status.value,
-        
-        # 学习和反馈相关
-        learning_feedback=agent_state.learning_feedback,
-        knowledge_updates=agent_state.knowledge_updates,
+    # 教学层 → 兼容别名
+    if to := state.get("teaching_output"):
+        state["draft_content"] = to.get("content", "")
+        state["socratic_question"] = to.get("socratic_question", "")
+        if to.get("socratic_question"):
+            qs = state.get("socratic_questions", [])
+            if to["socratic_question"] not in qs:
+                qs.append(to["socratic_question"])
+            state["socratic_questions"] = qs
+        state["socratic_guidance"] = to
+        state["curriculum_plan"] = to.get("curriculum", {})
 
-        # 学习画像 / 难度
-        goal_type=getattr(agent_state, "goal_type", "general"),
-        skill_level=getattr(agent_state, "skill_level", "unknown"),
-        difficulty_level=getattr(agent_state, "difficulty_level", "medium"),
+    # 评估层 → 兼容别名
+    if eo := state.get("evaluation_output"):
+        state["critique"] = eo.get("critique", "")
+        state["is_satisfactory"] = eo.get("is_satisfactory", False)
+        state["quiz_stats"] = eo.get("quiz", {})
 
-        # 数据槽位
-        retrieved_docs=getattr(agent_state, "retrieved_docs", []),
-        validated_docs=getattr(agent_state, "validated_docs", []),
-        tool_outputs=getattr(agent_state, "tool_outputs", {}),
-        curriculum_plan=getattr(agent_state, "curriculum_plan", {}),
-        evidence_used=getattr(agent_state, "evidence_used", []),
-        quiz_stats=getattr(agent_state, "quiz_stats", {}),
-        
-        # 元数据
-        metadata=agent_state.metadata,
-        error_info=agent_state.error_info,
-        feature_flags=getattr(agent_state, 'feature_flags', {}),
-        experiment_tags=getattr(agent_state, 'experiment_tags', []),
-        
-        # LangGraph 特定字段
-        messages=[],  # 从 dialogue_history 转换
-        next_step=None,
-        workflow_complete=False,
-        waiting_for_user=False,
-        
-        # 性能优化字段
-        cache=getattr(agent_state, '_cache', {}),
-        performance_data=getattr(agent_state, '_performance_data', {}),
-        execution_hints=getattr(agent_state, '_execution_hints', {})
-    )
-
-
-def update_state_from_agent_state(state: LearningWorkflowState, agent_state: 'AgentState') -> LearningWorkflowState:
-    """从 AgentState 更新 LangGraph 状态"""
-    # 更新所有字段
-    state["session_id"] = agent_state.session_id
-    state["timestamp"] = agent_state.timestamp
-    state["user_query"] = agent_state.user_query
-    state["interpretation"] = agent_state.interpretation
-    state["query_type"] = agent_state.query_type.value if agent_state.query_type else None
-    
-    state["retrieved_knowledge"] = agent_state.retrieved_knowledge
-    state["knowledge_sources"] = agent_state.knowledge_sources
-    # 设置retrieval_decision
-    state["retrieval_decision"] = getattr(agent_state, 'retrieval_decision', None)
-    
-    state["socratic_question"] = agent_state.socratic_question
-    state["socratic_questions"] = agent_state.socratic_questions
-    state["user_response"] = agent_state.user_response
-    state["user_responses"] = agent_state.user_responses
-    state["dialogue_history"] = agent_state.dialogue_history
-    # 🔧 修复：添加 socratic_guidance 字段
-    state["socratic_guidance"] = getattr(agent_state, 'socratic_guidance', {})
-    
-    state["conversation_stage"] = agent_state.conversation_stage.value
-    state["understanding_level"] = agent_state.understanding_level.value
-    state["conversation_round"] = agent_state.conversation_round
-    state["max_conversation_rounds"] = agent_state.max_conversation_rounds
-    state["target_understanding_level"] = agent_state.target_understanding_level.value
-    state["conversation_context"] = agent_state.conversation_context
-    state["user_context"] = agent_state.user_context
-    
-    state["learning_objectives"] = agent_state.learning_objectives
-    state["achieved_objectives"] = agent_state.achieved_objectives
-    state["current_focus"] = agent_state.current_focus
-    state["key_concepts_covered"] = agent_state.key_concepts_covered
-    state["goal_type"] = getattr(agent_state, "goal_type", "general")
-    state["skill_level"] = getattr(agent_state, "skill_level", "unknown")
-    state["difficulty_level"] = getattr(agent_state, "difficulty_level", "medium")
-    
-    state["plan"] = agent_state.plan
-    state["execution_result"] = agent_state.execution_result
-    state["execution_status"] = agent_state.execution_status.value
-    
-    state["learning_feedback"] = agent_state.learning_feedback
-    state["knowledge_updates"] = agent_state.knowledge_updates
-    
-    state["metadata"] = agent_state.metadata
-    state["error_info"] = agent_state.error_info
-    state["feature_flags"] = getattr(agent_state, 'feature_flags', {})
-    state["experiment_tags"] = getattr(agent_state, 'experiment_tags', [])
-    
-    # 数据槽位
-    state["retrieved_docs"] = getattr(agent_state, 'retrieved_docs', [])
-    state["validated_docs"] = getattr(agent_state, 'validated_docs', [])
-    state["tool_outputs"] = getattr(agent_state, 'tool_outputs', {})
-    state["curriculum_plan"] = getattr(agent_state, 'curriculum_plan', {})
-    state["evidence_used"] = getattr(agent_state, 'evidence_used', [])
-    state["quiz_stats"] = getattr(agent_state, 'quiz_stats', {})
-    
-    # 审核槽位
-    state["draft_content"] = getattr(agent_state, 'draft_content', "")
-    state["critique"] = getattr(agent_state, 'critique', "")
-    state["is_satisfactory"] = getattr(agent_state, 'is_satisfactory', False)
-    state["revision_count"] = getattr(agent_state, 'revision_count', 0)
-
-    # 更新缓存和性能数据
-    state["cache"] = getattr(agent_state, '_cache', {})
-    state["performance_data"] = getattr(agent_state, '_performance_data', {})
-    state["execution_hints"] = getattr(agent_state, '_execution_hints', {})
-    
-    return state
+    # 记忆层 → 兼容别名
+    if ma := state.get("memory_analysis"):
+        state["learning_feedback"] = ma
 
 
 __all__ = [
     "LearningWorkflowState",
     "create_initial_state",
-    "state_to_agent_state",
-    "agent_state_to_state",
-    "update_state_from_agent_state",
+    "sync_compat_fields",
 ]

@@ -1,6 +1,21 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""域内智能体模块导出。"""
+"""
+EduPilot v4 — Agent 模块
+
+3 个核心 Agent：
+  LearningPlannerAgent — 意图识别 + 教学路由（单次 LLM 调用）
+  TeachingAgent        — 多模态教学：explain / socratic / curriculum / direct
+  EvaluationAgent      — 质量评估 + 测验生成（合并评估周期）
+
+配套 2 个 Service（位于 src.core.services）：
+  KnowledgeEngineService — GraphRAG 检索 + 工具调用
+  MemorySystemService    — 学生画像持久化 + 记忆更新
+"""
+
+from .planner import LearningPlannerAgent
+from .teacher import TeachingAgent
+from .evaluator import EvaluationAgent
 
 from .base import (
     ActionType,
@@ -19,23 +34,13 @@ from .base import (
     get_global_agent_registry,
     register_agent,
 )
-from .knowledge_manager import KnowledgeManagerAgent
-from .memory_manager import MemoryManagerAgent
-from .orchestrator import OrchestratorAgent
-from .query_analyzer import (
-    IntentCandidate,
-    QueryAnalyzerAgent,
-    QueryAnalysisResult,
-    RetrievalPlan,
-)
-from .socratic_guide import SocraticGuideAgent
-from .draft_writer import DraftWriterAgent
-from .reviewer import ReviewerAgent
-from .curriculum_designer import CurriculumDesignerAgent
-from .quiz_master import QuizMasterAgent
-from .tool_specialist import ToolSpecialistAgent
 
 __all__ = [
+    # v4 核心 Agents
+    "LearningPlannerAgent",
+    "TeachingAgent",
+    "EvaluationAgent",
+    # 基础设施
     "BaseAgent",
     "AgentState",
     "AgentRegistry",
@@ -51,19 +56,4 @@ __all__ = [
     "get_global_agent_registry",
     "register_agent",
     "get_agent",
-    # Query Analyzer (新的统一模块)
-    "IntentCandidate",
-    "QueryAnalyzerAgent",
-    "QueryAnalysisResult",
-    "RetrievalPlan",
-    # 其他 Agents
-    "KnowledgeManagerAgent",
-    "SocraticGuideAgent",
-    "OrchestratorAgent",
-    "MemoryManagerAgent",  # 统一记忆管理（替代LearnerAgent和UserProfileAgent）
-    "DraftWriterAgent",
-    "ReviewerAgent",
-    "CurriculumDesignerAgent",
-    "QuizMasterAgent",
-    "ToolSpecialistAgent",
 ]

@@ -61,6 +61,12 @@ print(reply)
 | `QWEN_MAX_TOKENS` | `2000` | 最大输出 token 数 |
 | `QWEN_EMBEDDING_MODEL` | `text-embedding-v1` | 嵌入模型标识符 |
 
+**默认客户端**：当同时配置了 Qwen（百炼）API Key 和 Ollama 时，会**优先使用百炼**作为默认 LLM。若需指定默认客户端，可设置：
+
+| 变量 | 说明 |
+| -------- | ----------- |
+| `LLM_DEFAULT_CLIENT` | `qwen` 或 `ollama`，指定默认使用的客户端；不设置时按上述优先级生效。 |
+
 如果环境变量不适合，您也可以手动实例化设置类并将其传递给相应的客户端构造函数。
 
 ## 扩展管理器

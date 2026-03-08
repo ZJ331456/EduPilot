@@ -1,17 +1,20 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-核心模块
-提供学习系统的核心功能，包括智能体和工作流
-直接使用 LangGraph 实现
+EduPilot v4 — 核心模块
+
+3 Agents + 2 Services + LangGraph Workflow
 """
 
-# 智能体
+# ── v4 Agents ──────────────────────────────────────────────────────────────
 from .agents import (
+    LearningPlannerAgent,
+    TeachingAgent,
+    EvaluationAgent,
+    # 基础设施
     BaseAgent,
     AgentState,
     AgentRegistry,
-    # 枚举
     ConversationStage,
     UnderstandingLevel,
     ExecutionStatus,
@@ -21,30 +24,20 @@ from .agents import (
     ProfileDimension,
     EmotionType,
     LearningPattern,
-    # 智能体注册
     get_global_agent_registry,
     register_agent,
     get_agent,
-    # 具体智能体
-    QueryAnalyzerAgent,
-    KnowledgeManagerAgent,
-    SocraticGuideAgent,
-    OrchestratorAgent,
-    MemoryManagerAgent,
-    DraftWriterAgent,
-    ReviewerAgent,
-    CurriculumDesignerAgent,
-    QuizMasterAgent,
-    ToolSpecialistAgent,
 )
 
-# 工作流（LangGraph 实现）
+# ── v4 Services ────────────────────────────────────────────────────────────
+from .services import KnowledgeEngineService, MemorySystemService
+
+# ── Workflow ───────────────────────────────────────────────────────────────
 from .workflow import (
     LangGraphLearningWorkflow,
     get_langgraph_learning_workflow,
     initialize_langgraph_learning_workflow,
     get_workflow_info,
-    # LangGraph 组件
     LearningWorkflowNodes,
     LearningWorkflowRouter,
     LearningWorkflowState,
@@ -52,7 +45,11 @@ from .workflow import (
 )
 
 __all__ = [
-    # 智能体
+    # v4 Agents
+    "LearningPlannerAgent",
+    "TeachingAgent",
+    "EvaluationAgent",
+    # 基础设施
     "BaseAgent",
     "AgentState",
     "AgentRegistry",
@@ -68,24 +65,14 @@ __all__ = [
     "get_global_agent_registry",
     "register_agent",
     "get_agent",
-    "QueryAnalyzerAgent",
-    "KnowledgeManagerAgent",
-    "SocraticGuideAgent",
-    "OrchestratorAgent",
-    "MemoryManagerAgent",
-    "DraftWriterAgent",
-    "ReviewerAgent",
-    "CurriculumDesignerAgent",
-    "QuizMasterAgent",
-    "ToolSpecialistAgent",
-    
-    # 工作流（LangGraph 实现）
+    # v4 Services
+    "KnowledgeEngineService",
+    "MemorySystemService",
+    # Workflow
     "LangGraphLearningWorkflow",
     "get_langgraph_learning_workflow",
     "initialize_langgraph_learning_workflow",
     "get_workflow_info",
-    
-    # LangGraph 组件
     "LearningWorkflowNodes",
     "LearningWorkflowRouter",
     "LearningWorkflowState",

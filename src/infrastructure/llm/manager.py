@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import os
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from .base import BaseLLMClient, LLMClientError, Message
@@ -130,23 +131,41 @@ class LLMManager:
     # Internal helpers
     # ------------------------------------------------------------------
     def _auto_register_from_env(self) -> None:
+        # 确保 .env 已加载（测试或非 Web 入口可能未加载），便于读到 QWEN_API_KEY 等
+        try:
+            from pathlib import Path
+            from dotenv import load_dotenv
+            root = Path(__file__).resolve().parent.parent.parent.parent
+            load_dotenv(root / ".env")
+        except Exception:
+            pass
+
+        # 先注册 Qwen/百炼（若配置了 API Key），再注册 Ollama
+        # 这样当两者都可用时，优先使用百炼 API；可通过 LLM_DEFAULT_CLIENT 覆盖
+        qwen_settings = QwenSettings.from_env()
+        if qwen_settings.enabled and qwen_settings.api_key:
+            try:
+                self.add_client("qwen", QwenLLMClient(settings=qwen_settings), set_as_default=True)
+            except Exception as exc:
+                self.logger.warning("Failed to register Qwen/Bailian client: %s", exc)
+
         # Ollama
         ollama_settings = OllamaSettings.from_env()
         if ollama_settings.enabled:
             try:
-                self.add_client("ollama", OllamaLLMClient(settings=ollama_settings), set_as_default=True)
+                self.add_client(
+                    "ollama",
+                    OllamaLLMClient(settings=ollama_settings),
+                    set_as_default=self._default_client is None,
+                )
             except Exception as exc:
                 self.logger.warning("Failed to register Ollama client: %s", exc)
 
-        # Qwen
-        qwen_settings = QwenSettings.from_env()
-        if qwen_settings.enabled and qwen_settings.api_key:
-            try:
-                self.add_client("qwen", QwenLLMClient(settings=qwen_settings), set_as_default=self._default_client is None)
-            except Exception as exc:
-                self.logger.warning("Failed to register Qwen client: %s", exc)
-        elif qwen_settings.enabled:
-            self.logger.debug("Qwen client enabled but API key missing; skipping auto registration")
+        # 显式指定默认客户端（.env 中设置 LLM_DEFAULT_CLIENT=qwen 或 ollama）
+        default_from_env = os.environ.get("LLM_DEFAULT_CLIENT", "").strip().lower()
+        if default_from_env and default_from_env in self._clients:
+            self._default_client = default_from_env
+            self.logger.info("Default LLM client set from env: %s", default_from_env)
 
     # Convenience wrappers for GraphRAG style integrations -----------------
     def get_llm_function(

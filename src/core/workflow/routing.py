@@ -1,163 +1,115 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-LangGraph 路由逻辑
-定义条件分支和路由决策
+EduPilot v4 — LangGraph 路由函数
+
+v4 精简路由（v3 原有 6 个路由函数，v4 保留 3 个核心路由）：
+
+planner → knowledge | teaching    (route_after_planning)
+teaching → evaluation | memory    (route_after_teaching)
+evaluation → teaching | memory    (route_after_evaluation)
 """
 
 import logging
-from typing import Dict, Any, List, Optional
+from typing import Literal
 
 from .state import LearningWorkflowState
-from src.infrastructure.utils.enums import QueryType, ConversationStage, UnderstandingLevel
+
+logger = logging.getLogger(__name__)
 
 
-class LearningWorkflowRouter:
-    """学习工作流路由器"""
-    
-    def __init__(self):
-        self.logger = logging.getLogger(self.__class__.__name__)
-    
-    def route_after_query_analysis(self, state: LearningWorkflowState) -> str:
-        """查询分析后的路由决策
-        
-        优化后：直接进入 planner，由 planner 决定是否需要调用 knowledge_manager
-        """
-        try:
-            # 检查是否有错误
-            if state.get("error_info"):
-                return "error_handler"
-            
-            # 直接进入规划阶段 - planner 会根据 retrieval_decision 决定是否调用 knowledge_manager
-            return "planner"
-            
-        except Exception as e:
-            self.logger.error(f"Routing after query analysis failed: {e}")
-            return "error_handler"
-    
-    def route_after_planning(self, state: LearningWorkflowState) -> str:
-        """规划后的路由决策
-        
-        优化后：根据 Planner 的输出决定下一步（工具或 DraftWriter）
-        """
-        try:
-            # 检查是否有错误
-            if state.get("error_info"):
-                return "error_handler"
-            
-            # 检查是否有显式的 next_step 指示
-            next_step = state.get("next_step")
-            if next_step and isinstance(next_step, str) and next_step not in ["planner", "error_handler"]:
-                return next_step
-            elif next_step and isinstance(next_step, list):
-                 # 简单取第一个，或者根据优先级
-                 return next_step[0]
-            
-            # 默认去 draft_writer
-            return "draft_writer"
-            
-        except Exception as e:
-            self.logger.error(f"Routing after planning failed: {e}")
-            return "error_handler"
-
-    def route_after_tool_execution(self, state: LearningWorkflowState) -> str:
-        """工具执行后的路由决策 (KnowledgeManager, ToolSpecialist, etc.)"""
-        try:
-             # 工具执行完通常去 DraftWriter 汇总
-             return "draft_writer"
-        except Exception as e:
-            self.logger.error(f"Routing after tool execution failed: {e}")
-            return "error_handler"
-
-    def route_after_reviewer(self, state: LearningWorkflowState) -> str:
-        """审核后的路由决策"""
-        # 如果审核通过
-        if state.get("is_satisfactory", False):
-            # 检查是否需要生成测试题 (基于 intent 或其他标志)
-            # 这里简单逻辑：如果有教学内容，尝试生成题目
-            if state.get("draft_content"):
-                 return "quiz_master"
-            return "conclusion"
-        # 否则回退到 draft_writer
-        return "draft_writer"
-        
-    def route_after_quiz_master(self, state: LearningWorkflowState) -> str:
-        """QuizMaster 后的路由"""
-        return "conclusion"
-
-    def route_after_curriculum_designer(self, state: LearningWorkflowState) -> str:
-        """CurriculumDesigner 后的路由"""
-        return "draft_writer"
-
-    def route_after_tool_specialist(self, state: LearningWorkflowState) -> str:
-        """ToolSpecialist 后的路由"""
-        return "draft_writer"
-    
-    def route_error_handler(self, state: LearningWorkflowState) -> str:
-        """错误处理路由"""
+def route_after_planning(
+    state: LearningWorkflowState,
+) -> Literal["knowledge", "teaching", "error_handler"]:
+    """规划后路由：需要检索 → knowledge，否则 → teaching"""
+    if state.get("error_info") and state.get("next_step") == "error_handler":
         return "error_handler"
-    
-    def route_conclusion(self, state: LearningWorkflowState) -> str:
-        """结论路由"""
-        return "conclusion"
-    
-    def route_wait_for_user(self, state: LearningWorkflowState) -> str:
-        """等待用户输入路由"""
-        return "wait_for_user"
+
+    task_plan = state.get("task_plan") or {}
+    need_retrieval = task_plan.get("need_retrieval", False)
+    routing = task_plan.get("routing", "teaching")
+
+    # 双重确认：task_plan.routing 和 need_retrieval 标志
+    if need_retrieval or routing == "knowledge":
+        logger.debug("[Route:Planning] → knowledge")
+        return "knowledge"
+
+    logger.debug("[Route:Planning] → teaching")
+    return "teaching"
 
 
-# 路由函数（LangGraph 需要的函数形式）
+def route_after_teaching(
+    state: LearningWorkflowState,
+) -> Literal["evaluation", "memory", "error_handler"]:
+    """教学后路由：需要评估 → evaluation，苏格拉底/direct → memory"""
+    if state.get("next_step") == "error_handler":
+        return "error_handler"
+
+    next_step = state.get("next_step", "memory")
+
+    if next_step == "evaluation":
+        logger.debug("[Route:Teaching] → evaluation")
+        return "evaluation"
+
+    logger.debug("[Route:Teaching] → memory")
+    return "memory"
+
+
+def route_after_evaluation(
+    state: LearningWorkflowState,
+) -> Literal["teaching", "memory"]:
+    """评估后路由：不满意且可修改 → teaching（重写），否则 → memory"""
+    next_step = state.get("next_step", "memory")
+
+    if next_step == "teaching":
+        logger.debug("[Route:Evaluation] → teaching (revision)")
+        return "teaching"
+
+    logger.debug("[Route:Evaluation] → memory")
+    return "memory"
+
+
+# ── 向后兼容（v3 API 层可能引用）────────────────────────────────────────
+
 def route_after_query_analysis(state: LearningWorkflowState) -> str:
-    """查询分析后的路由"""
-    router = LearningWorkflowRouter()
-    return router.route_after_query_analysis(state)
+    """v3 兼容别名 → 直接路由到规划"""
+    return "planner" if not state.get("error_info") else "error_handler"
 
 
-def route_after_planning(state: LearningWorkflowState) -> str:
-    """规划后的路由"""
-    router = LearningWorkflowRouter()
-    return router.route_after_planning(state)
-
-
-def route_after_tool_execution(state: LearningWorkflowState) -> str:
-    """工具执行后的路由"""
-    router = LearningWorkflowRouter()
-    return router.route_after_tool_execution(state)
+def route_after_planning_v3(state: LearningWorkflowState) -> str:
+    """v3 兼容别名"""
+    return route_after_planning(state)
 
 
 def route_after_reviewer(state: LearningWorkflowState) -> str:
-    """审核后的路由"""
-    router = LearningWorkflowRouter()
-    return router.route_after_reviewer(state)
+    """v3 兼容别名 → 评估路由"""
+    return route_after_evaluation(state)
 
-def route_after_quiz_master(state: LearningWorkflowState) -> str:
-    """QuizMaster 后的路由"""
-    router = LearningWorkflowRouter()
-    return router.route_after_quiz_master(state)
-
-def route_after_curriculum_designer(state: LearningWorkflowState) -> str:
-    """CurriculumDesigner 后的路由"""
-    router = LearningWorkflowRouter()
-    return router.route_after_curriculum_designer(state)
-
-def route_after_tool_specialist(state: LearningWorkflowState) -> str:
-    """ToolSpecialist 后的路由"""
-    router = LearningWorkflowRouter()
-    return router.route_after_tool_specialist(state)
 
 def route_error_handler(state: LearningWorkflowState) -> str:
-    """错误处理路由"""
-    router = LearningWorkflowRouter()
-    return router.route_error_handler(state)
+    return "error_handler"
 
 
 def route_conclusion(state: LearningWorkflowState) -> str:
-    """结论路由"""
-    router = LearningWorkflowRouter()
-    return router.route_conclusion(state)
+    return "conclusion"
 
 
 def route_wait_for_user(state: LearningWorkflowState) -> str:
-    """等待用户输入路由"""
-    router = LearningWorkflowRouter()
-    return router.route_wait_for_user(state)
+    return "conclusion"
+
+
+def route_after_quiz_master(state: LearningWorkflowState) -> str:
+    return "conclusion"
+
+
+__all__ = [
+    "route_after_planning",
+    "route_after_teaching",
+    "route_after_evaluation",
+    "route_after_query_analysis",
+    "route_error_handler",
+    "route_conclusion",
+    "route_wait_for_user",
+    "route_after_reviewer",
+    "route_after_quiz_master",
+]
