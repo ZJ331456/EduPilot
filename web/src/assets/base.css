@@ -1,0 +1,104 @@
+/* 现代配色体系与全局变量 */
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600&display=swap');
+
+:root {
+
+  /* 基础色板 */
+  --c-white: #ffffff;
+  --c-black: #0b1021;
+  
+  --c-gray-50: #f8fafc;
+  --c-gray-100: #eef2f7;
+  --c-gray-200: #e1e7ef;
+  --c-gray-300: #c9d2e3;
+  --c-gray-400: #96a0b5;
+  --c-gray-500: #6b748c;
+  --c-gray-600: #4a5266;
+  --c-gray-700: #32384b;
+  --c-gray-800: #1f2433;
+  --c-gray-900: #0f172a;
+
+  /* 品牌色 - 青蓝渐变 */
+  --c-primary-50: #e0f4ff;
+  --c-primary-100: #bae7ff;
+  --c-primary-500: #0ea5e9;
+  --c-primary-600: #0284c7;
+  --c-primary-700: #0b7694;
+  
+  /* 强调色 */
+  --c-accent: #f97316;
+  --c-accent-soft: rgba(249, 115, 22, 0.12);
+
+  /* 辅助色 */
+  --c-success: #10b981;
+  --c-warning: #f59e0b;
+  --c-danger: #ef4444;
+  --c-info: #0ea5e9;
+
+  /* 应用语义变量 */
+  --primary-color: var(--c-primary-600);
+  --primary-color-hover: var(--c-primary-700);
+  --primary-color-light: var(--c-primary-50);
+  --accent-color: var(--c-accent);
+  
+  --bg-primary: linear-gradient(135deg, #f8fbff 0%, #f3f7ff 45%, #f9f5ff 100%);
+  --bg-secondary: #f1f5f9;
+  --bg-tertiary: #eaf0ff;
+  
+  --text-primary: var(--c-gray-900);
+  --text-secondary: var(--c-gray-500);
+  --text-tertiary: var(--c-gray-400);
+  
+  --border-color: rgba(15, 23, 42, 0.06);
+  --border-color-hover: rgba(15, 23, 42, 0.12);
+  
+  --shadow-sm: 0 4px 20px rgba(15, 23, 42, 0.06);
+  --shadow-md: 0 12px 40px rgba(15, 23, 42, 0.08);
+  --shadow-lg: 0 18px 60px rgba(15, 23, 42, 0.12);
+  --glass-bg: rgba(255, 255, 255, 0.72);
+  --glass-blur: blur(18px);
+  
+  --font-sans: 'Space Grotesk', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", sans-serif;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  min-height: 100vh;
+  color: var(--text-primary);
+  background: var(--bg-primary);
+  font-family: var(--font-sans);
+  line-height: 1.5;
+  overflow: hidden; /* 防止全屏滚动 */
+}
+
+/* 滚动条美化 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--c-gray-300);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--c-gray-400);
+}

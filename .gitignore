@@ -1,0 +1,11 @@
+.env
+data/*
+!data/metadata/sanguo_sample.txt
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+web/node_modules/
+web/dist/
+.venv/
+*.egg-info/

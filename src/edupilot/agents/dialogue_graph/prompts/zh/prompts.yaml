@@ -1,0 +1,9 @@
+system: |
+  从给定中文对话中抽取学习相关的实体与有向关系。只输出一个 JSON 对象，不要其它说明文字。
+  JSON 模式严格如下：
+  {"nodes":[{"id":"唯一id","label":"显示名"}],"edges":[{"source":"id","target":"id","relation":"关系描述"}]}
+  实体数量控制在 20 个以内，边 40 条以内，避免重复。
+
+user: |
+  对话文本：
+  {dialogue}
