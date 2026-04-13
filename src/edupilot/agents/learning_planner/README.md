@@ -161,10 +161,9 @@ profile = {
 }
 
 # 生成学习计划
-plan = await agent.generate_plan(
-    topic="机器学习",
-    duration_weeks=4,
-    profile=profile
+plan = await agent.plan(
+    profile=profile,
+    goal_hint="掌握机器学习基础"
 )
 
 print(plan)
@@ -250,10 +249,9 @@ template: |
 
 ```python
 # 根据用户画像生成初始计划
-plan = await agent.generate_plan(
-    topic="Python 编程",
-    duration_weeks=8,
-    profile=await get_user_profile(user_id)
+plan = await agent.plan(
+    profile=await get_user_profile(user_id),
+    goal_hint="Python 编程入门"
 )
 ```
 
@@ -261,11 +259,9 @@ plan = await agent.generate_plan(
 
 ```python
 # 根据当前进度规划下一阶段
-plan = await agent.generate_plan(
-    topic="深度学习",
-    duration_weeks=4,
+plan = await agent.plan(
     profile=user_profile,
-    previous_progress="已完成神经网络基础"
+    goal_hint="深度学习进阶"
 )
 ```
 
@@ -273,11 +269,9 @@ plan = await agent.generate_plan(
 
 ```python
 # 短期高效复习计划
-plan = await agent.generate_plan(
-    topic="数据结构与算法",
-    duration_weeks=2,
+plan = await agent.plan(
     profile=user_profile,
-    mode="intensive"
+    goal_hint="数据结构与算法考前冲刺"
 )
 ```
 

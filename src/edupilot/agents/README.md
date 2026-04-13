@@ -37,15 +37,18 @@ agents/
 ```python
 from edupilot.agents.chat.agent import ChatAgent
 from edupilot.core.protocol import AgentMode, UnifiedContext
+from edupilot.core.stream import ResponseBuilder, StreamBus
 
 agent = ChatAgent()
+bus = StreamBus()
+builder = ResponseBuilder(bus, "session_1", "ChatAgent")
 ctx = UnifiedContext(
     session_id="session_1",
     user_id="user_1",
     user_message="什么是机器学习？",
     mode=AgentMode.DIRECT
 )
-result = await agent.execute(ctx)
+result = await agent.execute(ctx, builder=builder)
 ```
 
 ### 模式说明

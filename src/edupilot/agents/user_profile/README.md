@@ -194,9 +194,9 @@ agent = UserProfileAgent()
 
 # 分析用户画像
 profile = await agent.analyze(
-    conversation_summary="用户最近在学习机器学习...",
-    graph_summary="用户已掌握Python基础...",
-    user_id="user_123"
+    user_id="user_123",
+    summary="用户最近在学习机器学习...",
+    graph_summary="用户已掌握Python基础..."
 )
 
 print(profile)

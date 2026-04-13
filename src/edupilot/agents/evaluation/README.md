@@ -144,11 +144,9 @@ curl -X POST http://localhost:8000/api/v1/evaluation/run \
 ### 函数式接口
 
 ```python
-from edupilot.agents.evaluation.agent import EvaluationAgent
+from edupilot.agents.evaluation.agent import evaluate
 
-agent = EvaluationAgent()
-
-result = await agent.evaluate(
+result = await evaluate(
     summary="用户学习了梯度下降算法...",
     goals="理解并能应用梯度下降"
 )
@@ -201,7 +199,7 @@ template: |
 
 ```python
 # 课程结束后进行评测
-result = await agent.evaluate(
+result = await evaluate(
     summary="用户完成了"神经网络基础"课程学习...",
     goals="理解神经网络基本原理"
 )
@@ -211,7 +209,7 @@ result = await agent.evaluate(
 
 ```python
 # 回答问题后进行评测
-result = await agent.evaluate(
+result = await evaluate(
     summary="用户回答了关于梯度下降的问题...",
     goals="掌握梯度下降算法"
 )
@@ -221,7 +219,7 @@ result = await agent.evaluate(
 
 ```python
 # 作业提交后评测
-result = await agent.evaluate(
+result = await evaluate(
     summary="用户完成了机器学习作业...",
     goals="掌握 scikit-learn 基础用法"
 )

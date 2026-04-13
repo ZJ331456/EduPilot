@@ -15,14 +15,14 @@ ChatAgent
 
 ### ChatAgent
 
-主对话智能体，继承自 `MultiTurnAgent`。
+主对话智能体，继承自 `BaseAgent`。
 
 ```python
-class ChatAgent(MultiTurnAgent):
+class ChatAgent(BaseAgent):
     def __init__(self, config: Optional[AgentConfig] = None):
         super().__init__(config)
-        self.query_analyzer = QueryAnalyzer()
-        self.router = DialogueRouter()
+        self._analyzer = QueryAnalyzer()
+        self._router = DialogueRouter()
 ```
 
 ### ChatMode 枚举
@@ -54,9 +54,9 @@ class IntentResult:
 @dataclass
 class RouteResult:
     mode: ChatMode                    # 响应模式
-    use_rag: bool                    # 是否使用 RAG 检索
-    use_tools: bool                  # 是否使用工具
-    reasoning_level: str              # 推理深度
+    reasoning: str                   # 路由理由
+    use_rag: bool                   # 是否使用 RAG 检索
+    use_tools: bool                 # 是否使用工具
 ```
 
 ## 工作流程
@@ -78,9 +78,9 @@ class RouteResult:
 │  Step 2: 智能路由    │  DialogueRouter.route()
 │  • mode             │  └── RouteResult:
 │  • use_rag          │      ├── mode: DIRECT/SOCRATIC
-│  • use_tools        │      ├── use_rag: bool
-│  • reasoning_level  │      ├── use_tools: bool
-└─────────┬───────────┘      └── reasoning_level: shallow/deep
+│  • use_tools        │      ├── reasoning: str
+│  • reasoning        │      ├── use_rag: bool
+└─────────┬───────────┘      └── use_tools: bool
           │
           ▼
 ┌─────────────────────┐
@@ -152,16 +152,19 @@ ctx = UnifiedContext(
 )
 
 # 执行对话
-response = await agent.execute(ctx, builder=None, stream=False)
+from edupilot.core.stream import StreamBus
+bus = StreamBus()
+builder = ResponseBuilder(bus, ctx.session_id, "ChatAgent")
+response = await agent.execute(ctx, builder=builder, stream=False)
 print(response)
 ```
 
 ### 流式调用
 
 ```python
-# 流式响应
+# 流式响应（返回 Dict 事件流）
 async for event in agent.execute_stream(ctx):
-    print(event.type, event.data)
+    print(event.get("type"), event.get("data"))
 ```
 
 ### SSE 事件流
@@ -170,10 +173,11 @@ async for event in agent.execute_stream(ctx):
 from edupilot.core.stream import ResponseBuilder, StreamBus
 
 bus = StreamBus()
-builder = ResponseBuilder(bus, session_id="session_123")
+builder = ResponseBuilder(bus, session_id="session_123", agent_name="ChatAgent")
 
+# execute 会通过 builder 推送事件
 await agent.execute(ctx, builder=builder, stream=True)
-# 前端可通过 SSE 订阅 bus 获取实时响应
+# 前端通过 SSE 订阅 bus 接收实时响应
 ```
 
 ## 集成接口
