@@ -271,26 +271,26 @@ onMounted(() => {
 </script>
 
 <style scoped>
+/* 全局布局 - 深色主题 */
 .learning-workbench {
   height: 100vh;
   width: 100vw;
   display: flex;
-  background: #f5f7fa;
+  background: var(--bg-base);
   overflow: hidden;
   position: relative;
 }
 
-/* 侧边栏通用样式 */
+/* 侧边栏通用样式 - 深色卡片风格 */
 .side-panel {
   height: 100%;
-  background: #ffffff;
-  border-right: 1px solid #eef0f2;
+  background: var(--bg-card);
+  border-right: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   z-index: 10;
-  box-shadow: 2px 0 8px rgba(0,0,0,0.02);
 }
 
 .left-panel {
@@ -301,9 +301,8 @@ onMounted(() => {
 .right-panel {
   width: 420px;
   flex-shrink: 0;
-  border-left: 1px solid #eef0f2;
+  border-left: 1px solid var(--border-color);
   border-right: none;
-  box-shadow: -2px 0 8px rgba(0,0,0,0.02);
 }
 
 /* 折叠状态 */
@@ -314,28 +313,28 @@ onMounted(() => {
   opacity: 0;
 }
 
-/* 面板头部 */
+/* 面板头部 - 深色强调 */
 .panel-header {
   height: 56px;
   padding: 0 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid #f0f2f5;
-  background: #ffffff;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--bg-card);
   flex-shrink: 0;
 }
 
 .panel-title {
   font-weight: 600;
   font-size: 14px;
-  color: #1a1a1a;
+  color: var(--text-primary);
 }
 
 .panel-content {
   flex: 1;
   overflow-y: auto;
-  background: #ffffff;
+  background: var(--bg-card);
 }
 
 /* 中间主区域 */
@@ -343,17 +342,17 @@ onMounted(() => {
   flex: 1;
   display: flex;
   flex-direction: column;
-  min-width: 0; /* 防止 flex 子项溢出 */
-  background: #f5f7fa;
+  min-width: 0;
+  background: var(--bg-base);
   position: relative;
 }
 
-/* 顶部工具栏 */
+/* 顶部工具栏 - 深色强调 */
 .workspace-header {
   height: 56px;
   padding: 0 20px;
-  background: #ffffff;
-  border-bottom: 1px solid #eef0f2;
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border-color);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -364,13 +363,13 @@ onMounted(() => {
 .workspace-title {
   font-size: 16px;
   font-weight: 600;
-  color: #1a1a1a;
+  color: var(--text-primary);
   margin: 0;
   letter-spacing: 0.5px;
 }
 
 .header-left, .header-right {
-  width: 100px; /* 占位平衡 */
+  width: 100px;
   display: flex;
   align-items: center;
 }
@@ -381,13 +380,15 @@ onMounted(() => {
 
 .toggle-btn {
   font-size: 18px;
-  color: #606266;
+  color: var(--text-secondary);
   padding: 8px;
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
 }
 
 .toggle-btn:hover {
-  color: #409eff;
-  background-color: #ecf5ff;
+  color: var(--text-primary);
+  background-color: var(--bg-hover);
 }
 
 .btn-text {
@@ -413,28 +414,13 @@ onMounted(() => {
 
 .action-icon {
   font-size: 16px;
-  color: #909399;
+  color: var(--text-secondary);
   cursor: pointer;
-  transition: color 0.2s;
+  transition: color var(--transition-fast);
 }
 
 .action-icon:hover {
-  color: #409eff;
-}
-
-/* 自定义滚动条 */
-.custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #e0e3e9;
-  border-radius: 3px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
+  color: var(--text-primary);
 }
 
 /* 响应式调整 */
@@ -475,10 +461,8 @@ onMounted(() => {
     transform: translateX(0);
   }
   
-  /* 在移动端覆盖默认的 width: 0 隐藏方式，改用 transform */
   .side-panel.is-collapsed {
-    width: auto; /* 恢复宽度以便 transform 生效 */
-    /* pointer-events: none; */
+    width: auto;
   }
 }
 </style>

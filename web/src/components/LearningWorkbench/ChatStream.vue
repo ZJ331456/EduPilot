@@ -41,23 +41,31 @@
 
     <!-- 输入区域 -->
     <div class="input-area">
-      <el-input
-        v-model="userInput"
-        type="textarea"
-        :rows="3"
-        placeholder="输入你的问题，开始学习之旅..."
-        @keydown.ctrl.enter="handleSend"
-        :disabled="isLoading"
-      />
-      <div class="input-actions">
-        <el-button
-          type="primary"
-          @click="handleSend"
-          :loading="isLoading"
-          :disabled="!userInput.trim()"
-        >
-          发送
-        </el-button>
+      <div class="input-wrapper">
+        <el-input
+          v-model="userInput"
+          type="textarea"
+          :rows="3"
+          placeholder="输入你的问题，开始学习之旅..."
+          @keydown.enter.exact.prevent="handleSend"
+          @keydown.shift.enter="handleShiftEnter"
+          :disabled="isLoading"
+          class="message-input"
+          resize="none"
+        />
+        <div class="input-actions">
+          <el-button
+            type="primary"
+            size="small"
+            @click="handleSend"
+            :loading="isLoading"
+            :disabled="!userInput.trim()"
+            class="send-btn"
+          >
+            <el-icon><Promotion /></el-icon>
+            发送
+          </el-button>
+        </div>
       </div>
     </div>
   </div>
@@ -65,7 +73,7 @@
 
 <script setup>
 import { ref, watch, nextTick } from 'vue'
-import { Reading, Loading } from '@element-plus/icons-vue'
+import { Reading, Loading, Promotion } from '@element-plus/icons-vue'
 import MessageBubble from './MessageBubble.vue'
 import ThoughtProcess from './ThoughtProcess.vue'
 import SocraticCard from './SocraticCard.vue'
@@ -110,6 +118,11 @@ const handleSend = () => {
   nextTick(() => {
     scrollToBottom()
   })
+}
+
+// 处理 Shift+Enter 换行（默认行为，无需特殊处理）
+const handleShiftEnter = () => {
+  // textarea 的默认行为就是换行，无需额外处理
 }
 
 const handleQuickReply = (reply) => {
@@ -172,16 +185,79 @@ watch(() => props.messages.length, () => {
   font-size: 14px;
 }
 
+/* 输入区域 - 优化样式 */
 .input-area {
-  padding: 16px;
+  padding: 16px 24px 20px;
+  background: var(--bg-card);
   border-top: 1px solid var(--border-color);
+}
+
+.input-wrapper {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
   background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xl);
+  padding: 8px 12px;
+  transition: all var(--transition-fast);
+}
+
+.input-wrapper:focus-within {
+  border-color: var(--border-hover);
+  box-shadow: var(--shadow-sm);
+}
+
+.message-input {
+  flex: 1;
+}
+
+.message-input :deep(.el-textarea__inner) {
+  background: transparent;
+  border: none;
+  padding: 8px 0;
+  color: var(--text-primary);
+  font-size: 14px;
+  line-height: 1.6;
+  resize: none;
+}
+
+.message-input :deep(.el-textarea__inner::placeholder) {
+  color: var(--text-ghost);
+}
+
+.message-input :deep(.el-textarea__inner:focus) {
+  box-shadow: none;
 }
 
 .input-actions {
-  margin-top: 8px;
   display: flex;
-  justify-content: flex-end;
+  align-items: center;
+  padding-bottom: 4px;
+}
+
+.send-btn {
+  border-radius: var(--radius-md);
+  font-weight: 500;
+  background: var(--text-primary);
+  border-color: var(--text-primary);
+  color: var(--bg-base);
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.send-btn:hover:not(:disabled) {
+  background: var(--bg-hover);
+  border-color: var(--bg-hover);
+  transform: translateY(-1px);
+}
+
+.send-btn:disabled {
+  background: var(--text-ghost);
+  border-color: var(--text-ghost);
+  color: var(--text-muted);
 }
 </style>
 

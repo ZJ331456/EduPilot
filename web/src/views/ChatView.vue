@@ -1,87 +1,126 @@
 <template>
   <div class="chat-view">
-    <el-row :gutter="24">
-      <!-- 主对话区 -->
-      <el-col :xs="24" :lg="16">
-        <el-card class="chat-card">
-          <template #header>
-            <div class="chat-header">
-              <div class="header-left">
-                <el-icon><ChatDotRound /></el-icon>
-                <span>智能学习对话</span>
-                <el-tag v-if="sessionId" type="success" size="small" effect="plain">
-                  会话中
-                </el-tag>
+    <div class="chat-layout">
+      <!-- 左侧主对话区 -->
+      <div class="chat-main">
+        <div class="chat-card">
+          <!-- 头部 -->
+          <div class="chat-header">
+            <div class="header-left">
+              <div class="header-icon">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path d="M21 15C21 15.5304 20.7893 16.0391 20.4142 16.4142C20.0391 16.7893 19.5304 17 19 17H7L3 21V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H19C19.5304 3 20.0391 3.21071 20.4142 3.58579C20.7893 3.96086 21 4.46957 21 5V15Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
               </div>
-              <div class="header-actions">
-                <el-button 
-                  v-if="sessionId" 
-                  size="small" 
-                  @click="endSession"
-                  type="danger"
-                  plain
-                >
-                  结束会话
-                </el-button>
+              <div class="header-info">
+                <h2 class="header-title">智能学习对话</h2>
+                <span class="header-status" v-if="sessionId">
+                  <span class="status-dot"></span>
+                  会话进行中
+                </span>
               </div>
             </div>
-          </template>
+            <div class="header-actions">
+              <el-button
+                v-if="sessionId"
+                size="small"
+                @click="endSession"
+                type="danger"
+                plain
+              >
+                结束会话
+              </el-button>
+            </div>
+          </div>
+
+          <!-- 模式切换 -->
+          <div class="mode-tabs">
+            <button
+              class="mode-tab"
+              :class="{ active: currentMode === 'direct' }"
+              @click="currentMode = 'direct'"
+            >
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              直接对话
+            </button>
+            <button
+              class="mode-tab"
+              :class="{ active: currentMode === 'socratic' }"
+              @click="currentMode = 'socratic'"
+            >
+              <svg viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                <path d="M9.09 9C9.3251 8.33167 9.78915 7.76811 10.4 7.40912C11.0108 7.05014 11.7289 6.91894 12.4272 7.03871C13.1255 7.15849 13.7588 7.52152 14.2151 8.06353C14.6713 8.60553 14.9211 9.29152 14.92 10C14.92 12 11.92 13 11.92 13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <path d="M12 17H12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              苏格拉底式
+            </button>
+          </div>
 
           <!-- 消息列表 -->
           <div class="messages-container" ref="messagesContainer">
+            <!-- 空状态 -->
             <div v-if="messages.length === 0" class="empty-state">
-              <el-empty description="开始你的学习之旅吧！">
-                <template #image>
-                  <el-icon :size="80" color="#e5e7eb"><Reading /></el-icon>
-                </template>
-              </el-empty>
+              <div class="empty-illustration">
+                <svg viewBox="0 0 120 120" fill="none">
+                  <circle cx="60" cy="60" r="50" fill="url(#emptyGrad)" opacity="0.1"/>
+                  <path d="M60 30C41.879 30 27 44.879 27 63C27 81.121 41.879 96 60 96C78.121 96 93 81.121 93 63C93 44.879 78.121 30 60 30ZM60 86C47.85 86 38 76.15 38 64C38 51.85 47.85 42 60 42C72.15 42 82 51.85 82 64C82 76.15 72.15 86 60 86Z" fill="url(#emptyGrad)"/>
+                  <circle cx="60" cy="64" r="8" fill="url(#emptyGrad)"/>
+                  <defs>
+                    <linearGradient id="emptyGrad" x1="27" y1="30" x2="93" y2="96">
+                      <stop offset="0%" stop-color="#FFFFFF"/>
+                      <stop offset="100%" stop-color="#CCCCCC"/>
+                    </linearGradient>
+                  </defs>
+                </svg>
+              </div>
+              <h3 class="empty-title">开始你的学习之旅</h3>
+              <p class="empty-desc">输入问题，我会为你提供智能解答或引导式学习</p>
+              <div class="quick-actions">
+                <button
+                  v-for="q in quickQuestions"
+                  :key="q"
+                  class="quick-btn"
+                  @click="useQuickQuestion(q)"
+                >
+                  {{ q }}
+                </button>
+              </div>
             </div>
 
-            <div 
-              v-for="(message, index) in messages" 
+            <!-- 消息列表 -->
+            <div
+              v-for="(message, index) in messages"
               :key="index"
               :class="['message-item', message.role]"
             >
               <div class="message-avatar">
-                <!-- 用户头像 -->
-                <el-avatar 
-                  v-if="message.role === 'user'"
-                  :size="40" 
-                  class="user-avatar"
-                >
-                  <el-icon :size="20"><UserFilled /></el-icon>
-                </el-avatar>
-                <!-- 系统头像 -->
-                <el-avatar 
-                  v-else 
-                  :size="40" 
-                  class="assistant-avatar"
-                >
-                  <el-icon :size="20"><ChatDotSquare /></el-icon>
-                </el-avatar>
+                <div v-if="message.role === 'user'" class="avatar user">
+                  <span>{{ userNameChar }}</span>
+                </div>
+                <div v-else class="avatar assistant">
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M12 3L2 12H5V21H19V12H22L12 3Z" stroke="currentColor" stroke-width="2"/>
+                    <circle cx="12" cy="14" r="3" stroke="currentColor" stroke-width="2"/>
+                  </svg>
+                </div>
               </div>
               <div class="message-content">
                 <div class="message-meta">
-                  <span class="message-role">
-                    {{ message.role === 'user' ? '你' : 'EduPilot' }}
-                  </span>
-                  <span class="message-time">
-                    {{ formatTime(message.timestamp) }}
-                  </span>
+                  <span class="message-role">{{ message.role === 'user' ? '你' : 'EduPilot' }}</span>
+                  <span class="message-time">{{ formatTime(message.timestamp) }}</span>
                 </div>
-                <div class="message-text" v-html="formatMessage(message.content)"></div>
-                
-                <!-- 显示苏格拉底式对话信息 -->
-                <SocraticDialogue 
-                  v-if="message.socratic_dialogue" 
-                  :dialogue="message.socratic_dialogue" 
-                />
-                
-                <!-- 显示工作流步骤 (新版) -->
+                <div class="message-text markdown-content" v-html="formatMessage(message.content)"></div>
+
+                <!-- 工作流步骤 -->
                 <div v-if="message.workflow_steps && message.workflow_steps.length > 0" class="message-extra">
                   <el-collapse>
-                    <el-collapse-item title="工作流执行过程" name="workflow">
-                       <el-timeline>
+                    <el-collapse-item title="执行过程" name="workflow">
+                      <el-timeline>
                         <el-timeline-item
                           v-for="(step, idx) in message.workflow_steps"
                           :key="idx"
@@ -89,127 +128,12 @@
                           :timestamp="`${step.duration_ms.toFixed(0)}ms`"
                           placement="top"
                         >
-                          <el-card class="workflow-step-card" shadow="hover">
-                            <template #header>
-                              <div class="step-header">
-                                <span class="step-name">{{ step.step_name }}</span>
-                                <el-tag size="small" effect="dark">{{ step.agent_name }}</el-tag>
-                              </div>
-                            </template>
-                            
-                            <!-- 步骤结果展示 -->
-                            <div class="step-content">
-                                <!-- Analysis -->
-                                <div v-if="step.agent_name === 'QueryAnalyzer'">
-                                    <p><strong>Intent:</strong> {{ step.result.intent }}</p>
-                                </div>
-                                
-                                <!-- Orchestrator -->
-                                <div v-if="step.agent_name === 'Orchestrator' && step.result.next_workers">
-                                    <p><strong>Next Workers:</strong> {{ step.result.next_workers }}</p>
-                                </div>
-
-                                <!-- DraftWriter -->
-                                <div v-if="step.agent_name === 'DraftWriter'">
-                                    <p>初稿已生成</p>
-                                </div>
-
-                                <!-- Reviewer -->
-                                <div v-if="step.agent_name === 'Reviewer'">
-                                    <p>审核完成</p>
-                                </div>
-                                
-                                <!-- ToolSpecialist -->
-                                <div v-if="step.agent_name === 'ToolSpecialist' && step.result.outputs">
-                                     <div v-for="(output, tool_name) in step.result.outputs" :key="tool_name">
-                                        <p><strong>{{ tool_name }}:</strong> {{ output }}</p>
-                                     </div>
-                                </div>
-
-                                 <!-- CurriculumDesigner -->
-                                <div v-if="step.agent_name === 'CurriculumDesigner' && step.result.topic">
-                                    <p><strong>Topic:</strong> {{ step.result.topic }}</p>
-                                </div>
-                            </div>
-                          </el-card>
+                          <div class="workflow-step">
+                            <span class="step-name">{{ step.step_name }}</span>
+                            <el-tag size="small" type="success" effect="dark">{{ step.agent_name }}</el-tag>
+                          </div>
                         </el-timeline-item>
                       </el-timeline>
-                    </el-collapse-item>
-                  </el-collapse>
-                </div>
-
-                <!-- 显示分析结果 (旧版兼容) -->
-                <div v-else-if="message.analysis" class="message-extra">
-                  <el-collapse>
-                    <el-collapse-item title="查询分析" name="analysis">
-                      <el-descriptions :column="2" size="small" border>
-                        <el-descriptions-item label="意图">
-                          <el-tag size="small" effect="plain">{{ message.analysis.intent }}</el-tag>
-                        </el-descriptions-item>
-                        <el-descriptions-item label="查询类型">
-                          <el-tag size="small" type="success" effect="plain">
-                            {{ message.analysis.query_type }}
-                          </el-tag>
-                        </el-descriptions-item>
-                        <el-descriptions-item label="置信度">
-                          <el-progress 
-                            :percentage="message.analysis.confidence * 100" 
-                            :format="() => (message.analysis.confidence * 100).toFixed(1) + '%'"
-                          />
-                        </el-descriptions-item>
-                      </el-descriptions>
-                    </el-collapse-item>
-                  </el-collapse>
-                </div>
-
-                <!-- 显示学习计划 -->
-                <div v-if="message.plan" class="message-extra">
-                  <el-collapse>
-                    <el-collapse-item title="学习计划" name="plan">
-                      <div class="plan-content">
-                        <!-- 计划类型 -->
-                        <div v-if="message.plan.plan_type" style="margin-bottom: 12px">
-                          <el-tag type="info" size="small" effect="plain">
-                            {{ message.plan.plan_type }}
-                          </el-tag>
-                        </div>
-                        
-                        <!-- 推理说明 -->
-                        <div v-if="message.plan.reasoning" class="plan-reasoning">
-                          <div class="reasoning-title">
-                            💡 规划思路
-                          </div>
-                          <div class="reasoning-text">
-                            {{ message.plan.reasoning }}
-                          </div>
-                        </div>
-                        
-                        <!-- 行动项 -->
-                        <div v-if="message.plan.action_items && message.plan.action_items.length > 0">
-                          <div class="steps-title">
-                            📋 执行步骤
-                          </div>
-                          <el-steps 
-                            direction="vertical" 
-                            :active="message.plan.action_items.length"
-                          >
-                            <el-step 
-                              v-for="(action, idx) in message.plan.action_items" 
-                              :key="idx"
-                              :title="`步骤${idx + 1}: ${action.action_type || '执行动作'}`"
-                              :description="action.description || '暂无描述'"
-                              status="success"
-                            />
-                          </el-steps>
-                        </div>
-                        
-                        <!-- 空状态提示 -->
-                        <el-empty 
-                          v-if="!message.plan.plan_type && !message.plan.action_items?.length && !message.plan.reasoning" 
-                          description="学习计划生成中..."
-                          :image-size="60"
-                        />
-                      </div>
                     </el-collapse-item>
                   </el-collapse>
                 </div>
@@ -217,11 +141,14 @@
             </div>
 
             <!-- 加载状态 -->
-            <div v-if="isLoading" class="message-item assistant">
+            <div v-if="isLoading" class="message-item assistant loading">
               <div class="message-avatar">
-                <el-avatar :size="40" class="assistant-avatar loading-avatar">
-                  <el-icon :size="20"><ChatDotSquare /></el-icon>
-                </el-avatar>
+                <div class="avatar assistant">
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M12 3L2 12H5V21H19V12H22L12 3Z" stroke="currentColor" stroke-width="2"/>
+                    <circle cx="12" cy="14" r="3" stroke="currentColor" stroke-width="2"/>
+                  </svg>
+                </div>
               </div>
               <div class="message-content">
                 <div class="typing-indicator">
@@ -235,179 +162,125 @@
 
           <!-- 输入框 -->
           <div class="input-container">
-            <el-input
-              v-model="userInput"
-              type="textarea"
-              :rows="3"
-              placeholder="输入你的问题，开始学习之旅..."
-              @keydown.ctrl.enter="sendMessage"
-              :disabled="isLoading"
-              class="chat-input"
-            />
-            <div class="input-actions">
-              <div class="input-hint">
-                <el-icon><InfoFilled /></el-icon>
-                按 Ctrl+Enter 快速发送
-              </div>
-              <el-button 
-                type="primary" 
-                size="large"
+            <div class="input-wrapper">
+              <textarea
+                v-model="userInput"
+                class="chat-input"
+                :rows="3"
+                :placeholder="currentMode === 'socratic' ? '输入问题，我将通过提问引导你思考...' : '输入你的问题...'"
+                @keydown.ctrl.enter="sendMessage"
+                :disabled="isLoading"
+              ></textarea>
+              <button
+                class="send-btn"
+                :class="{ disabled: !userInput.trim() || isLoading }"
+                :disabled="!userInput.trim() || isLoading"
                 @click="sendMessage"
-                :loading="isLoading"
-                :disabled="!userInput.trim()"
-                class="send-button"
               >
-                <el-icon><Promotion /></el-icon>
-                <span>发送消息</span>
-              </el-button>
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path d="M22 2L11 13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M22 2L15 22L11 13L2 9L22 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+            </div>
+            <div class="input-hint">
+              <span class="hint-icon">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" stroke-width="2"/>
+                  <path d="M12 16V12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  <circle cx="12" cy="8" r="1" fill="currentColor"/>
+                </svg>
+              </span>
+              按 Ctrl + Enter 快速发送
             </div>
           </div>
-        </el-card>
-      </el-col>
+        </div>
+      </div>
 
-      <!-- 侧边栏 -->
-      <el-col :xs="24" :lg="8">
-        <!-- 快速提示 -->
-        <el-card class="sidebar-card">
-          <template #header>
-            <div class="card-header">
-              <el-icon><QuestionFilled /></el-icon>
-              <span>{{ currentQuestionType === 'socratic' ? '苏格拉底式引导' : '快速示例' }}</span>
-              <el-button 
-                size="small" 
-                text 
-                @click="toggleQuestionType"
-                class="toggle-btn"
-              >
-                <el-icon>
-                  <QuestionFilled v-if="currentQuestionType === 'normal'" />
-                  <ChatLineRound v-else />
-                </el-icon>
-                {{ currentQuestionType === 'normal' ? '苏格拉底模式' : '普通模式' }}
-              </el-button>
-            </div>
-          </template>
-          <div class="quick-questions">
-            <el-button 
-              v-for="q in currentQuestions" 
-              :key="q"
-              text
-              size="small"
-              @click="useQuickQuestion(q)"
-              :class="['quick-question-btn', currentQuestionType === 'socratic' ? 'socratic-btn' : '']"
-            >
-              <el-icon>
-                <ChatLineRound v-if="currentQuestionType === 'socratic'" />
-                <QuestionFilled v-else />
-              </el-icon>
-              {{ q }}
-            </el-button>
-          </div>
-          
-          <!-- 苏格拉底式对话说明 -->
-          <div v-if="currentQuestionType === 'socratic'" class="socratic-hint">
-            <el-alert
-              title="苏格拉底式引导"
-              type="info"
-              :closable="false"
-              show-icon
-              size="small"
-            >
-              <template #default>
-                <div style="font-size: 12px; line-height: 1.4;">
-                  通过提问的方式引导你深入思考，帮助你建立对知识的全面理解。
-                  选择下方问题开始苏格拉底式学习体验！
-                </div>
-              </template>
-            </el-alert>
-          </div>
-        </el-card>
-
-        <!-- 工作流状态 -->
-        <WorkflowStatus 
-          v-if="workflowState" 
-          :workflow-state="workflowState"
-          :socratic-dialogue="socraticDialogue"
-        />
-
+      <!-- 右侧边栏 -->
+      <div class="chat-sidebar">
         <!-- 会话信息 -->
-        <el-card class="sidebar-card" v-if="sessionId">
-          <template #header>
-            <div class="card-header">
-              <el-icon><InfoFilled /></el-icon>
-              <span>会话信息</span>
+        <div class="sidebar-card" v-if="sessionId">
+          <h3 class="card-title">
+            <svg viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+              <path d="M12 16V12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <circle cx="12" cy="8" r="1" fill="currentColor"/>
+            </svg>
+            会话信息
+          </h3>
+          <div class="info-list">
+            <div class="info-item">
+              <span class="info-label">会话ID</span>
+              <span class="info-value truncate">{{ sessionId }}</span>
             </div>
-          </template>
-          <el-descriptions :column="1" size="small" border>
-            <el-descriptions-item label="会话ID">
-              <el-text size="small" truncated style="width: 150px">{{ sessionId }}</el-text>
-            </el-descriptions-item>
-            <el-descriptions-item label="消息数">
-              {{ messages.length }}
-            </el-descriptions-item>
-            <el-descriptions-item label="用户ID">
-              <el-text size="small" truncated style="width: 150px">{{ userId }}</el-text>
-            </el-descriptions-item>
-          </el-descriptions>
-        </el-card>
+            <div class="info-item">
+              <span class="info-label">消息数</span>
+              <span class="info-value">{{ messages.length }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">当前模式</span>
+              <span class="info-value mode-badge" :class="currentMode">
+                {{ currentMode === 'direct' ? '直接对话' : '苏格拉底式' }}
+              </span>
+            </div>
+          </div>
+        </div>
 
         <!-- 下一步建议 -->
-        <el-card class="sidebar-card" v-if="nextSuggestions.length > 0">
-          <template #header>
-            <div class="card-header">
-              <el-icon><Guide /></el-icon>
-              <span>下一步建议</span>
-            </div>
-          </template>
-          <el-timeline>
-            <el-timeline-item 
-              v-for="(suggestion, idx) in nextSuggestions" 
+        <div class="sidebar-card" v-if="nextSuggestions.length > 0">
+          <h3 class="card-title">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            下一步建议
+          </h3>
+          <div class="suggestion-list">
+            <div
+              v-for="(suggestion, idx) in nextSuggestions"
               :key="idx"
-              size="small"
-              type="primary"
-              hollow
+              class="suggestion-item"
             >
-              {{ suggestion }}
-            </el-timeline-item>
-          </el-timeline>
-        </el-card>
-      </el-col>
-    </el-row>
+              <span class="suggestion-num">{{ idx + 1 }}</span>
+              <span class="suggestion-text">{{ suggestion }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 快捷问题 -->
+        <div class="sidebar-card">
+          <h3 class="card-title">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M9.09 9C9.3251 8.33167 9.78915 7.76811 10.4 7.40912C11.0108 7.05014 11.7289 6.91894 12.4272 7.03871C13.1255 7.15849 13.7588 7.52152 14.2151 8.06353C14.6713 8.60553 14.9211 9.29152 14.92 10C14.92 12 11.92 13 11.92 13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <path d="M12 17H12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            {{ currentMode === 'socratic' ? '苏格拉底引导问题' : '快捷问题' }}
+          </h3>
+          <div class="quick-questions">
+            <button
+              v-for="q in (currentMode === 'socratic' ? socraticQuestions : quickQuestions)"
+              :key="q"
+              class="quick-question-btn"
+              @click="useQuickQuestion(q)"
+            >
+              {{ q }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, nextTick, watch } from 'vue'
+import { ref, computed, nextTick, watch, onMounted } from 'vue'
 import { ElMessageBox } from 'element-plus'
-import {
-  ChatDotRound,
-  UserFilled,
-  ChatDotSquare,
-  Reading,
-  QuestionFilled,
-  ChatLineRound,
-  InfoFilled,
-  Guide,
-  Promotion
-} from '@element-plus/icons-vue'
 import { useUserStore } from '../stores/user'
 import { useChatStore } from '../stores/chat'
-import { useThrottleFn } from '../composables/useThrottle'
 import * as edupilot from '../api/edupilot'
 import MarkdownIt from 'markdown-it'
-import SocraticDialogue from '../components/SocraticDialogue.vue'
-import WorkflowStatus from '../components/WorkflowStatus.vue'
-import {
-  formatDate,
-  showError,
-  showSuccess,
-  showWarning,
-  DEFAULT_QUICK_QUESTIONS,
-  SOCRATIC_TRIGGER_QUESTIONS,
-  DEBOUNCE_DELAYS
-} from '../utils'
 
-// 配置 markdown-it
+// Markdown 配置
 const md = new MarkdownIt({
   html: false,
   linkify: false,
@@ -415,57 +288,64 @@ const md = new MarkdownIt({
   typographer: true
 })
 
+// Store
 const userStore = useUserStore()
 const chatStore = useChatStore()
 
+// 状态
+const userInput = ref('')
+const messagesContainer = ref(null)
+const currentMode = ref('direct')
+
+// 计算属性
 const userId = computed(() => userStore.userId)
 const sessionId = computed(() => userStore.sessionId)
 const messages = computed(() => chatStore.messages)
 const isLoading = computed(() => chatStore.isLoading)
-
-const workflowState = computed(() => chatStore.workflowState)
-const socraticDialogue = computed(() => chatStore.socraticDialogue)
 const nextSuggestions = computed(() => chatStore.nextSuggestions)
 
-const userInput = ref('')
-const messagesContainer = ref(null)
+const userNameChar = computed(() => {
+  const name = userStore.userName || '游'
+  return name.charAt(0).toUpperCase()
+})
 
-const quickQuestions = DEFAULT_QUICK_QUESTIONS
-const socraticQuestions = SOCRATIC_TRIGGER_QUESTIONS
-const currentQuestionType = ref('normal')
+// 快捷问题
+const quickQuestions = [
+  '解释一下机器学习中的梯度下降',
+  '帮我总结一下链表和数组的区别',
+  '什么是操作系统中的死锁？'
+]
 
+const socraticQuestions = [
+  '为什么学习算法很重要？',
+  '什么是递归？它和循环有什么联系？',
+  '为什么我们需要数据结构？'
+]
+
+// 格式化时间
 function formatTime(timestamp) {
-  return formatDate(timestamp, 'time')
+  if (!timestamp) return ''
+  const date = new Date(timestamp)
+  return date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
 }
 
+// 格式化消息
 function formatMessage(content) {
   try {
     return md.render(content || '')
   } catch (error) {
-    console.warn('Markdown 解析失败:', error)
     return `<p>${(content || '').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</p>`
   }
 }
 
+// 使用快捷问题
 function useQuickQuestion(question) {
-  if (isLoading.value) {
-    showWarning('请等待当前消息发送完成')
-    return
-  }
+  if (isLoading.value) return
   userInput.value = question
-  nextTick(() => {
-    sendMessage()
-  })
+  nextTick(() => sendMessage())
 }
 
-function toggleQuestionType() {
-  currentQuestionType.value = currentQuestionType.value === 'normal' ? 'socratic' : 'normal'
-}
-
-const currentQuestions = computed(() => {
-  return currentQuestionType.value === 'socratic' ? socraticQuestions : quickQuestions
-})
-
+// 发送消息
 async function sendMessage() {
   const message = userInput.value.trim()
   if (!message || isLoading.value) return
@@ -479,12 +359,11 @@ async function sendMessage() {
   chatStore.setLoading(true)
 
   try {
-    const mode = currentQuestionType.value === 'socratic' ? 'socratic' : 'direct'
     const response = await edupilot.chat({
       userId: userId.value,
       sessionId: sessionId.value,
       message,
-      mode,
+      mode: currentMode.value,
       updateGraph: true
     })
 
@@ -501,12 +380,26 @@ async function sendMessage() {
 
   } catch (error) {
     console.error('发送消息失败:', error)
-    showError(error, '发送失败，请重试')
+    chatStore.addMessage({
+      role: 'assistant',
+      content: '抱歉，发生了错误，请稍后重试。'
+    })
   } finally {
     chatStore.setLoading(false)
   }
 }
 
+// 滚动到底部
+function scrollToBottom() {
+  if (messagesContainer.value) {
+    messagesContainer.value.scrollTo({
+      top: messagesContainer.value.scrollHeight,
+      behavior: 'smooth'
+    })
+  }
+}
+
+// 结束会话
 async function endSession() {
   try {
     await ElMessageBox.confirm(
@@ -525,25 +418,15 @@ async function endSession() {
 
     userStore.clearSession()
     chatStore.clearMessages()
-    
-    showSuccess('会话已结束')
+
   } catch (error) {
     if (error !== 'cancel') {
       console.error('结束会话失败:', error)
-      showError(error, '结束会话失败')
     }
   }
 }
 
-const scrollToBottom = useThrottleFn((smooth = true) => {
-  if (messagesContainer.value) {
-    messagesContainer.value.scrollTo({
-      top: messagesContainer.value.scrollHeight,
-      behavior: smooth ? 'smooth' : 'auto'
-    })
-  }
-}, DEBOUNCE_DELAYS.SCROLL)
-
+// 监听消息变化
 watch(messages, () => {
   nextTick(() => scrollToBottom())
 }, { deep: true })
@@ -557,382 +440,573 @@ watch(isLoading, (newVal) => {
 
 <style scoped>
 .chat-view {
-  max-width: 1400px;
-  margin: 0 auto;
+  height: 100%;
+}
+
+.chat-layout {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 24px;
+  height: 100%;
+}
+
+/* 主聊天区 */
+.chat-main {
+  display: flex;
+  flex-direction: column;
 }
 
 .chat-card {
-  background: #ffffff;
-  border: 1px solid #e5e5e5;
-  height: calc(100vh - 140px);
+  background: var(--bg-card);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
-  border-radius: 16px;
+  height: 100%;
   overflow: hidden;
 }
 
-.chat-card :deep(.el-card__header) {
-  padding: 18px 24px;
-  border-bottom: 1px solid #e5e5e5;
-  background: #fafafa;
-}
-
-.chat-card :deep(.el-card__body) {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  padding: 0;
-  overflow: hidden;
-}
-
+/* 头部 */
 .chat-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--border-color);
+  background: transparent;
 }
 
 .header-left {
   display: flex;
   align-items: center;
-  gap: 12px;
-  font-weight: 600;
-  font-size: 15px;
-  color: #000000;
+  gap: 14px;
 }
 
-.messages-container {
-  flex: 1;
-  overflow-y: auto;
-  padding: 28px;
-  background: #f7f7f7;
-}
-
-.empty-state {
+.header-icon {
+  width: 38px;
+  height: 38px;
+  background: var(--text-primary);
+  border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
+  color: var(--bg-base);
+}
+
+.header-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.header-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.header-title {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.header-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.header-status .status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text-secondary);
+}
+
+/* 模式切换 */
+.mode-tabs {
+  display: flex;
+  gap: 8px;
+  padding: 14px 24px;
+  background: transparent;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.mode-tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.mode-tab svg {
+  width: 16px;
+  height: 16px;
+}
+
+.mode-tab:hover {
+  border-color: var(--text-secondary);
+  color: var(--text-primary);
+}
+
+.mode-tab.active {
+  background: var(--text-primary);
+  border-color: var(--text-primary);
+  color: var(--bg-base);
+}
+
+/* 消息列表 */
+.messages-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+  background: transparent;
+}
+
+/* 空状态 */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  text-align: center;
+  padding: 40px;
+}
+
+.empty-illustration {
+  width: 140px;
+  height: 140px;
+  margin-bottom: 24px;
+}
+
+.empty-illustration svg {
+  width: 100%;
   height: 100%;
 }
 
+.empty-title {
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 8px;
+}
+
+.empty-desc {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin: 0 0 24px;
+}
+
+.quick-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+
+.quick-btn {
+  padding: 8px 16px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.quick-btn:hover {
+  border-color: var(--text-secondary);
+  color: var(--text-primary);
+}
+
+/* 消息项 */
 .message-item {
   display: flex;
   gap: 14px;
-  margin-bottom: 28px;
-  animation: messageIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-@keyframes messageIn {
-  from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: translateY(0); }
+  margin-bottom: 20px;
 }
 
 .message-item.user {
   flex-direction: row-reverse;
 }
 
-.message-item.user .message-content {
-  background: #000000;
-  color: white;
-  border: none;
-  border-radius: 20px 20px 4px 20px;
-}
-
-.message-item.user .message-text,
-.message-item.user .message-text :deep(p) {
-  color: white;
+.message-item.loading .message-content {
+  background: var(--bg-card);
 }
 
 .message-avatar {
   flex-shrink: 0;
 }
 
-.user-avatar {
-  background: #000000 !important;
-  border: 2px solid #fff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+.avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 14px;
 }
 
-.assistant-avatar {
-  background: #ffffff !important;
-  color: #000000;
-  border: 1px solid #e5e5e5;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+.avatar.user {
+  background: var(--text-primary);
+  color: var(--bg-base);
 }
 
-.loading-avatar {
-  animation: breathing 2s ease-in-out infinite;
+.avatar.assistant {
+  background: var(--bg-card);
+  color: var(--text-primary);
 }
 
-@keyframes breathing {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.05); }
+.avatar svg {
+  width: 18px;
+  height: 18px;
 }
 
 .message-content {
   flex: 1;
-  background: #ffffff;
-  padding: 18px 22px;
-  border-radius: 4px 20px 20px 20px;
-  max-width: 75%;
-  border: 1px solid #e5e5e5;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
-  color: #333333;
+  max-width: 72%;
+  background: var(--bg-card);
+  padding: 14px 18px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color);
 }
 
-.message-item.user .message-content .message-meta {
-  border-bottom-color: rgba(255, 255, 255, 0.15);
-}
-
-.message-item.user .message-role,
-.message-item.user .message-time {
-  color: rgba(255, 255, 255, 0.9);
+.message-item.user .message-content {
+  background: var(--text-primary);
+  color: var(--bg-base);
+  border: none;
+  border-radius: var(--radius-lg) var(--radius-lg) 4px var(--radius-lg);
 }
 
 .message-meta {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 10px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid #f0f0f0;
-  font-size: 13px;
+  margin-bottom: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-color);
+  font-size: 12px;
+}
+
+.message-item.user .message-meta {
+  border-bottom-color: rgba(0, 0, 0, 0.1);
 }
 
 .message-role {
   font-weight: 600;
-  color: #000000;
+  color: var(--text-primary);
+}
+
+.message-item.user .message-role {
+  color: var(--bg-base);
 }
 
 .message-time {
-  color: #888888;
-  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.message-item.user .message-time {
+  color: rgba(0, 0, 0, 0.4);
 }
 
 .message-text {
-  line-height: 1.7;
-  word-wrap: break-word;
-  font-size: 15px;
-}
-
-.message-text :deep(p) {
-  margin: 8px 0;
-}
-
-.message-text :deep(pre) {
-  background: #1a1a1a;
-  color: #f5f5f5;
-  padding: 16px;
-  border-radius: 10px;
-  overflow-x: auto;
-  margin: 14px 0;
-  font-size: 13px;
-}
-
-.message-text :deep(code) {
-  font-family: 'JetBrains Mono', 'Fira Code', monospace;
-}
-
-.message-item:not(.user) .message-text :deep(code) {
-  background: #f5f5f5;
-  color: #000000;
-  padding: 3px 8px;
-  border-radius: 6px;
-  font-size: 13px;
+  line-height: 1.6;
+  font-size: 14px;
 }
 
 .message-extra {
-  margin-top: 16px;
-  padding-top: 14px;
-  border-top: 1px solid #f0f0f0;
+  margin-top: 14px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-color);
 }
 
-.workflow-step-card {
-  margin-bottom: 8px;
-  border-radius: 10px;
-}
-
-.step-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.step-name {
-  font-weight: 600;
-  font-size: 13px;
-  color: #000000;
-}
-
-.step-content {
-  font-size: 13px;
-  color: #666666;
-}
-
-.step-content p {
-  margin: 4px 0;
-}
-
-.plan-reasoning {
-  background: #f5f5f5;
-  padding: 14px;
-  border-radius: 10px;
-  margin-bottom: 14px;
-  border: 1px solid #e5e5e5;
-}
-
-.reasoning-title, .steps-title {
-  font-weight: 600;
-  color: #000000;
-  font-size: 13px;
-  margin-bottom: 8px;
-}
-
-.reasoning-text {
-  color: #666666;
-  font-size: 14px;
-  line-height: 1.6;
-}
-
+/* 加载动画 */
 .typing-indicator {
   display: flex;
-  gap: 5px;
-  padding: 6px 0;
+  gap: 4px;
+  padding: 8px 0;
 }
 
 .typing-indicator span {
-  width: 8px;
-  height: 8px;
-  background: #000000;
+  width: 6px;
+  height: 6px;
+  background: var(--text-secondary);
   border-radius: 50%;
-  animation: bounce 1.4s infinite;
-  opacity: 0.6;
+  animation: bounce 1.2s infinite;
+  opacity: 0.5;
 }
 
 .typing-indicator span:nth-child(2) { animation-delay: 0.15s; }
 .typing-indicator span:nth-child(3) { animation-delay: 0.3s; }
 
-@keyframes bounce {
-  0%, 60%, 100% { transform: translateY(0); }
-  30% { transform: translateY(-8px); }
-}
-
+/* 输入框 */
 .input-container {
-  padding: 20px 24px;
-  border-top: 1px solid #e5e5e5;
-  background: #fafafa;
+  padding: 18px 24px;
+  background: transparent;
+  border-top: 1px solid var(--border-color);
 }
 
-.chat-input :deep(.el-textarea__inner) {
-  border-radius: 12px;
-  border: 1px solid #e5e5e5;
-  padding: 14px 18px;
-  background: #ffffff;
-  transition: all 0.2s ease;
+.input-wrapper {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+}
+
+.chat-input {
+  flex: 1;
+  padding: 12px 16px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  background: var(--bg-secondary);
   font-size: 14px;
+  font-family: inherit;
+  line-height: 1.5;
+  resize: none;
+  transition: all var(--transition-fast);
+  color: var(--text-primary);
 }
 
-.chat-input :deep(.el-textarea__inner):focus {
-  background: #ffffff;
-  border-color: #000000;
-  box-shadow: none;
+.chat-input:focus {
+  outline: none;
+  border-color: var(--text-secondary);
+  background: var(--bg-card);
 }
 
-.input-actions {
+.chat-input::placeholder {
+  color: var(--text-muted);
+}
+
+.send-btn {
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--text-primary);
+  color: var(--bg-base);
+  cursor: pointer;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  margin-top: 14px;
+  justify-content: center;
+  transition: all var(--transition-normal);
+}
+
+.send-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.send-btn:hover:not(.disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1);
+}
+
+.send-btn.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .input-hint {
   display: flex;
   align-items: center;
   gap: 6px;
+  margin-top: 10px;
   font-size: 12px;
-  color: #888888;
+  color: var(--text-muted);
 }
 
-.send-button {
-  border-radius: 100px;
-  padding: 10px 28px;
-  background: #000000;
-  border: none;
-  font-weight: 600;
-  font-size: 14px;
-  box-shadow: none;
-  transition: all 0.2s ease;
+.hint-icon {
+  width: 14px;
+  height: 14px;
 }
 
-.send-button:hover {
-  background: #1a1a1a;
-  transform: translateY(-2px);
+.hint-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* 右侧边栏 */
+.chat-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
 
 .sidebar-card {
-  background: #ffffff;
-  border: 1px solid #e5e5e5;
-  border-radius: 14px;
-  margin-bottom: 16px;
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color);
+  padding: 18px;
 }
 
-.sidebar-card :deep(.el-card__header) {
-  padding: 14px 18px;
-  border-bottom: 1px solid #f0f0f0;
-}
-
-.card-header {
+.card-title {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-weight: 600;
-  color: #000000;
+  gap: 10px;
   font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 14px;
 }
 
-.toggle-btn {
-  margin-left: auto;
-  color: #000000;
-  font-size: 12px;
+.card-title svg {
+  width: 16px;
+  height: 16px;
+  color: var(--text-secondary);
 }
 
-.quick-questions {
+.info-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.info-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.info-label {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.info-value {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.truncate {
+  max-width: 110px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mode-badge {
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  font-size: 11px;
+}
+
+.mode-badge.direct {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+}
+
+.mode-badge.socratic {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+}
+
+.suggestion-list {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.quick-question-btn {
-  justify-content: flex-start;
-  text-align: left;
-  white-space: normal;
-  height: auto;
-  padding: 12px 14px;
-  border: 1px solid #e5e5e5;
-  border-radius: 10px;
-  color: #666666;
+.suggestion-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
+}
+
+.suggestion-num {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--text-secondary);
+  color: var(--bg-base);
+  font-size: 10px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.suggestion-text {
   font-size: 13px;
-  transition: all 0.2s ease;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.quick-questions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.quick-question-btn {
+  padding: 10px 14px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+  transition: all var(--transition-fast);
 }
 
 .quick-question-btn:hover {
-  background: #000000;
-  color: #ffffff;
-  border-color: #000000;
+  border-color: var(--text-secondary);
+  color: var(--text-primary);
 }
 
-.socratic-btn {
-  border-left: 3px solid #000000 !important;
-  padding-left: 12px !important;
+/* 响应式 */
+@media (max-width: 1200px) {
+  .chat-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .chat-sidebar {
+    display: none;
+  }
 }
 
-.socratic-hint {
-  margin-top: 12px;
+@media (max-width: 768px) {
+  .chat-header {
+    padding: 14px 16px;
+  }
+
+  .messages-container {
+    padding: 16px;
+  }
+
+  .input-container {
+    padding: 14px 16px;
+  }
 }
 
-@media (max-width: 992px) {
-  .chat-card {
-    height: calc(100vh - 120px);
-    margin-bottom: 20px;
+/* 动画 */
+@keyframes bounce {
+  0%, 60%, 100% {
+    transform: translateY(0);
+  }
+  30% {
+    transform: translateY(-6px);
   }
 }
 </style>

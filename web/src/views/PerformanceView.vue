@@ -218,7 +218,7 @@ import { usePerformanceStore } from '@/stores/performance'
 import { useUserStore } from '@/stores/user'
 import { useChatStore } from '@/stores/chat'
 import { runEvaluation } from '../api/edupilot'
-import { showError, showSuccess, showWarning, formatDate, formatDuration, safeGet } from '../utils'
+import { showError, showInfo, showSuccess, showWarning, formatDate, formatDuration, safeGet } from '../utils'
 
 const performanceStore = usePerformanceStore()
 const userStore = useUserStore()
@@ -284,9 +284,20 @@ const getTimeClass = (time) => {
 const refreshData = async () => {
   loading.value = true
   try {
+    // 重置后端数据
     backendPerformance.value = { data: {} }
     cacheStats.value = { cache_size: 0, cache_ttl: 0 }
-    showSuccess('当前使用 EduPilot 后端（无旧版 endpoint 统计接口）')
+    
+    // 重新获取前端性能数据
+    // 通过重新计算或重置来刷新前端指标
+    if (performanceStore.isMonitoring) {
+      performanceStore.reset()
+      performanceStore.startMonitoring()
+    }
+    
+    // 模拟一些后端数据（实际项目中应该调用真实接口）
+    // 由于 EduPilot 后端没有提供统计接口，这里显示友好提示
+    showInfo('系统监控数据已刷新（后端暂无完整统计接口）')
   } catch (error) {
     console.error(error)
     showError(error, '获取数据失败')
@@ -306,9 +317,11 @@ onMounted(() => {
 </script>
 
 <style scoped>
+/* 全局容器 - 深色极简 */
 .performance-view {
   max-width: 1200px;
   margin: 0 auto;
+  padding: 24px;
 }
 
 .page-header {
@@ -317,7 +330,7 @@ onMounted(() => {
   align-items: center;
   margin-bottom: 36px;
   padding-bottom: 24px;
-  border-bottom: 1px solid #e5e5e5;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .header-left {
@@ -329,9 +342,9 @@ onMounted(() => {
 .header-icon {
   width: 52px;
   height: 52px;
-  background: #f5f5f5;
-  color: #000000;
-  border-radius: 14px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -341,20 +354,20 @@ onMounted(() => {
 .page-title {
   font-size: 26px;
   font-weight: 700;
-  color: #000000;
+  color: var(--text-primary);
   margin: 0;
   letter-spacing: -0.5px;
 }
 
 .page-subtitle {
-  color: #666666;
+  color: var(--text-secondary);
   font-size: 14px;
   margin: 4px 0 0 0;
 }
 
 .hint-text {
   font-size: 13px;
-  color: #666;
+  color: var(--text-secondary);
   margin: 0 0 12px 0;
 }
 
@@ -365,8 +378,8 @@ onMounted(() => {
 .eval-pre {
   margin-top: 12px;
   padding: 12px;
-  background: #f8f8f8;
-  border-radius: 8px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
   font-size: 12px;
   max-height: 320px;
   overflow: auto;
@@ -374,15 +387,15 @@ onMounted(() => {
   word-break: break-word;
 }
 
-/* 指标卡片 - 黑白灰 */
+/* 指标卡片 - 深色灰阶 */
 .metrics-overview {
   margin-bottom: 32px;
 }
 
 .metric-card {
-  background: #ffffff;
-  border: 1px solid #e5e5e5;
-  border-radius: 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xl);
   padding: 24px;
   display: flex;
   align-items: center;
@@ -392,14 +405,14 @@ onMounted(() => {
 }
 
 .metric-card:hover {
-  border-color: #000000;
+  border-color: var(--border-hover);
   transform: translateY(-2px);
 }
 
 .metric-icon {
   width: 52px;
   height: 52px;
-  border-radius: 14px;
+  border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -407,45 +420,45 @@ onMounted(() => {
 }
 
 .metric-icon.primary { 
-  background: #000000; 
-  color: #ffffff; 
+  background: var(--text-primary); 
+  color: var(--bg-base); 
 }
 .metric-icon.success { 
-  background: #f5f5f5; 
-  color: #333333; 
+  background: var(--success-color); 
+  color: var(--bg-base); 
 }
 .metric-icon.warning { 
-  background: #f5f5f5; 
-  color: #444444; 
+  background: var(--warning-color); 
+  color: var(--bg-base); 
 }
 .metric-icon.danger { 
-  background: #f5f5f5; 
-  color: #555555; 
+  background: var(--danger-color); 
+  color: var(--bg-base); 
 }
 
 .metric-value {
   font-size: 28px;
   font-weight: 700;
-  color: #000000;
+  color: var(--text-primary);
   letter-spacing: -0.5px;
 }
 
 .metric-label {
   font-size: 13px;
-  color: #888888;
+  color: var(--text-secondary);
   margin-top: 2px;
 }
 
-/* 通用卡片 - 简洁边框 */
+/* 通用卡片 - 深色简洁边框 */
 .clean-card {
-  background: #ffffff;
-  border: 1px solid #e5e5e5;
-  border-radius: 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xl);
   transition: all 0.2s ease;
 }
 
 .clean-card:hover {
-  border-color: #cccccc;
+  border-color: var(--border-hover);
 }
 
 .section-container {
@@ -461,10 +474,10 @@ onMounted(() => {
 .card-header .title {
   font-size: 15px;
   font-weight: 600;
-  color: #000000;
+  color: var(--text-primary);
 }
 
-/* 前端性能网格 - 黑白极简 */
+/* 前端性能网格 - 深色极简 */
 .performance-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -472,21 +485,21 @@ onMounted(() => {
 }
 
 .perf-item {
-  background: #f7f7f7;
+  background: var(--bg-secondary);
   padding: 20px;
-  border-radius: 14px;
-  border: 1px solid #e5e5e5;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color);
   transition: all 0.2s ease;
 }
 
 .perf-item:hover {
-  border-color: #000000;
+  border-color: var(--border-hover);
   transform: translateY(-2px);
 }
 
 .perf-label {
   font-size: 13px;
-  color: #666666;
+  color: var(--text-secondary);
   display: block;
   margin-bottom: 10px;
   font-weight: 500;
@@ -495,7 +508,7 @@ onMounted(() => {
 .perf-value {
   font-size: 24px;
   font-weight: 700;
-  color: #000000;
+  color: var(--text-primary);
   margin-bottom: 12px;
   letter-spacing: -0.3px;
 }
@@ -506,22 +519,27 @@ onMounted(() => {
   margin-bottom: 14px;
   font-size: 14px;
   padding: 10px 14px;
-  background: #ffffff;
-  border-radius: 8px;
+  background: var(--bg-card);
+  border-radius: var(--radius-md);
 }
 
-.stat-row .label { color: #666666; }
-.stat-row .value { font-weight: 600; color: #000000; }
+.stat-row .label { color: var(--text-secondary); }
+.stat-row .value { font-weight: 600; color: var(--text-primary); }
 
-/* 表格优化 */
+/* 表格优化 - 深色主题 */
 .clean-card :deep(.el-table) {
-  --el-table-border-color: #e5e5e5;
-  --el-table-header-bg-color: #f7f7f7;
+  --el-table-border-color: var(--border-color);
+  --el-table-header-bg-color: var(--bg-secondary);
+  --el-table-row-hover-bg-color: var(--bg-hover);
+  --el-table-bg-color: var(--bg-card);
+  --el-table-tr-bg-color: var(--bg-card);
+  --el-table-header-text-color: var(--text-secondary);
+  --el-table-text-color: var(--text-primary);
 }
 
 .clean-card :deep(.el-table th.el-table__cell) {
   font-weight: 600;
-  color: #666666;
+  color: var(--text-secondary);
   font-size: 13px;
 }
 
@@ -529,7 +547,7 @@ onMounted(() => {
   font-size: 14px;
 }
 
-/* 缓存卡片 - 黑白简约 */
+/* 缓存卡片 - 深色简约 */
 .cache-card :deep(.el-card__body) {
   display: flex;
   justify-content: space-between;
@@ -538,14 +556,14 @@ onMounted(() => {
 }
 
 .cache-label { 
-  color: #666666; 
+  color: var(--text-secondary); 
   font-size: 14px; 
   margin-bottom: 6px;
   font-weight: 500;
 }
 
 .cache-value { 
-  color: #000000; 
+  color: var(--text-primary); 
   font-size: 28px; 
   font-weight: 700;
   letter-spacing: -0.5px;
@@ -553,12 +571,12 @@ onMounted(() => {
 
 .cache-icon { 
   font-size: 40px; 
-  color: #cccccc;
+  color: var(--text-muted);
   opacity: 0.8;
 }
 
-/* 辅助类 */
-.text-success { color: #333333; font-weight: 600; }
-.text-warning { color: #555555; font-weight: 600; }
-.text-danger { color: #000000; font-weight: 600; }
+/* 辅助类 - 深色强调色 */
+.text-success { color: var(--success-color); font-weight: 600; }
+.text-warning { color: var(--warning-color); font-weight: 600; }
+.text-danger { color: var(--danger-color); font-weight: 600; }
 </style>

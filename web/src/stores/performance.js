@@ -38,13 +38,28 @@ export const usePerformanceStore = defineStore('performance', () => {
     // 监控页面加载性能
     if (window.performance) {
       const perfData = window.performance.timing
-      metrics.value.pageLoadTime = perfData.loadEventEnd - perfData.navigationStart
+      
+      // 使用更可靠的加载时间计算
+      // 如果 loadEventEnd 为 0，使用 navigationStart 作为后备基准
+      const navigationStart = perfData.navigationStart || 0
+      const loadEventEnd = perfData.loadEventEnd || 0
+      
+      // 计算页面加载时间
+      if (loadEventEnd > 0) {
+        metrics.value.pageLoadTime = loadEventEnd - navigationStart
+      } else {
+        // 使用 fetchStart 或 domContentLoadedEventEnd 作为后备
+        metrics.value.pageLoadTime = (perfData.domContentLoadedEventEnd || perfData.fetchStart) - navigationStart
+      }
 
       // 获取 FCP
       const paint = window.performance.getEntriesByType('paint')
       const fcp = paint.find(entry => entry.name === 'first-contentful-paint')
       if (fcp) {
-        metrics.value.firstContentfulPaint = fcp.startTime
+        metrics.value.firstContentfulPaint = Math.round(fcp.startTime)
+      } else {
+        // 如果没有 FCP 数据，使用 DOMContentLoaded 时间作为后备
+        metrics.value.firstContentfulPaint = (perfData.domContentLoadedEventEnd || perfData.domContentLoadedEventStart || 0) - navigationStart
       }
     }
 

@@ -312,16 +312,18 @@ onMounted(() => loadData())
 </script>
 
 <style scoped>
+/* 全局容器 - 深色极简 */
 .profile-view {
   max-width: 1200px;
   margin: 0 auto;
+  padding: 24px;
 }
 
-/* 顶部 Banner - 黑白极简 */
+/* 顶部 Banner - 深色卡片风格 */
 .profile-banner {
-  background: #ffffff;
-  border: 1px solid #e5e5e5;
-  border-radius: 20px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xl);
   padding: 36px 40px;
   margin-bottom: 28px;
 }
@@ -333,15 +335,14 @@ onMounted(() => loadData())
 }
 
 .user-avatar-large {
-  background: #000000 !important;
-  color: white;
-  border: 4px solid #f5f5f5;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  background: var(--text-primary) !important;
+  color: var(--bg-base);
+  border: 4px solid var(--border-color);
 }
 
 .user-name {
   margin: 0 0 8px 0;
-  color: #000000;
+  color: var(--text-primary);
   font-size: 26px;
   font-weight: 700;
   letter-spacing: -0.5px;
@@ -351,19 +352,19 @@ onMounted(() => loadData())
   display: flex;
   align-items: center;
   gap: 14px;
-  color: #666666;
+  color: var(--text-secondary);
   font-size: 14px;
 }
 
-/* 统计卡片 - 黑白灰 */
+/* 统计卡片 - 深色灰阶 */
 .stats-overview {
   margin-bottom: 28px;
 }
 
 .stat-card {
-  background: #ffffff;
-  border: 1px solid #e5e5e5;
-  border-radius: 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xl);
   padding: 22px;
   display: flex;
   align-items: center;
@@ -373,35 +374,47 @@ onMounted(() => loadData())
 }
 
 .stat-card:hover {
-  border-color: #000000;
+  border-color: var(--border-hover);
   transform: translateY(-2px);
 }
 
 .stat-icon {
   width: 52px;
   height: 52px;
-  border-radius: 14px;
+  border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 24px;
 }
 
-.stat-icon.blue { background: #f5f5f5; color: #000000; }
-.stat-icon.green { background: #f5f5f5; color: #333333; }
-.stat-icon.orange { background: #f5f5f5; color: #444444; }
-.stat-icon.purple { background: #f5f5f5; color: #555555; }
+.stat-icon.blue { 
+  background: var(--bg-secondary); 
+  color: var(--text-primary); 
+}
+.stat-icon.green { 
+  background: var(--bg-secondary); 
+  color: var(--text-primary); 
+}
+.stat-icon.orange { 
+  background: var(--bg-secondary); 
+  color: var(--text-primary); 
+}
+.stat-icon.purple { 
+  background: var(--bg-secondary); 
+  color: var(--text-primary); 
+}
 
 .stat-value { 
   font-size: 26px; 
   font-weight: 700; 
-  color: #000000;
+  color: var(--text-primary);
   letter-spacing: -0.5px;
 }
 
 .stat-label { 
   font-size: 13px; 
-  color: #888888;
+  color: var(--text-secondary);
   margin-top: 2px;
 }
 
@@ -426,6 +439,9 @@ onMounted(() => loadData())
   margin: 0;
   white-space: pre-wrap;
   word-break: break-word;
+  background: var(--bg-secondary);
+  padding: 16px;
+  border-radius: var(--radius-md);
 }
 
 .tag-gap {
@@ -435,7 +451,7 @@ onMounted(() => loadData())
 
 .insight-panel {
   font-size: 14px;
-  color: #333;
+  color: var(--text-secondary);
   line-height: 1.6;
 }
 
@@ -444,20 +460,20 @@ onMounted(() => loadData())
 }
 
 .insight-block strong {
-  color: #000;
+  color: var(--text-primary);
 }
 
-/* 通用卡片 - 简洁边框 */
+/* 通用卡片 - 深色简洁边框 */
 .clean-card {
-  background: #ffffff;
-  border: 1px solid #e5e5e5;
-  border-radius: 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xl);
   margin-bottom: 24px;
   transition: all 0.2s ease;
 }
 
 .clean-card:hover {
-  border-color: #cccccc;
+  border-color: var(--border-hover);
 }
 
 .card-header {
@@ -469,10 +485,10 @@ onMounted(() => loadData())
 .title { 
   font-size: 15px; 
   font-weight: 600; 
-  color: #000000;
+  color: var(--text-primary);
 }
 
-/* 时间轴 - 黑白 */
+/* 时间轴 - 深色线条 */
 .timeline-container {
   padding: 14px 0;
 }
@@ -481,7 +497,7 @@ onMounted(() => loadData())
   position: relative;
   padding-left: 28px;
   margin-bottom: 24px;
-  border-left: 2px solid #e5e5e5;
+  border-left: 2px solid var(--border-color);
 }
 
 .timeline-item:last-child {
@@ -495,9 +511,9 @@ onMounted(() => loadData())
   width: 12px;
   height: 12px;
   border-radius: 50%;
-  background: #000000;
-  border: 3px solid #ffffff;
-  box-shadow: 0 0 0 2px #e5e5e5;
+  background: var(--text-primary);
+  border: 3px solid var(--bg-card);
+  box-shadow: 0 0 0 2px var(--border-color);
 }
 
 .timeline-header {
@@ -509,28 +525,28 @@ onMounted(() => loadData())
 
 .timeline-title { 
   font-weight: 600; 
-  color: #000000;
+  color: var(--text-primary);
   font-size: 14px;
 }
 
 .timeline-time { 
   font-size: 12px; 
-  color: #888888;
+  color: var(--text-muted);
 }
 
 .timeline-desc { 
   margin: 0 0 10px 0; 
   font-size: 14px; 
-  color: #666666;
+  color: var(--text-secondary);
   line-height: 1.6;
 }
 
-/* 图表区域 */
+/* 图表区域 - 深色背景 */
 .graph-container {
   height: 400px;
-  background: #f7f7f7;
-  border-radius: 14px;
-  border: 1px solid #e5e5e5;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color);
 }
 
 .knowledge-graph-chart {
@@ -538,7 +554,7 @@ onMounted(() => loadData())
   height: 100%;
 }
 
-/* 情感面板 - 黑白灰 */
+/* 情感面板 - 深色灰阶 */
 .emotion-panel {
   padding: 14px 0;
 }
@@ -547,14 +563,14 @@ onMounted(() => loadData())
   text-align: center;
   margin-bottom: 24px;
   padding: 20px;
-  background: #f5f5f5;
-  border-radius: 14px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-lg);
 }
 
 .confidence {
   display: block;
   font-size: 12px;
-  color: #888888;
+  color: var(--text-muted);
   margin-top: 8px;
 }
 
@@ -565,25 +581,25 @@ onMounted(() => loadData())
   margin-bottom: 14px;
   font-size: 14px;
   padding: 10px 14px;
-  background: #f7f7f7;
-  border-radius: 10px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
   transition: all 0.2s ease;
 }
 
 .emotion-item:hover {
-  background: #f0f0f0;
+  background: var(--bg-hover);
 }
 
 .emotion-item .label { 
   width: 70px; 
-  color: #666666;
+  color: var(--text-secondary);
   font-weight: 500;
 }
 
 .emotion-item .count { 
   width: 36px; 
   text-align: right; 
-  color: #000000;
+  color: var(--text-primary);
   font-weight: 600;
 }
 
