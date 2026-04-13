@@ -14,7 +14,7 @@ from edupilot.agents.chat.agent import ChatAgent
 from edupilot.agents.base.agent import AgentConfig
 from edupilot.core.protocol import AgentMode, UnifiedContext
 from edupilot.core.stream import EventType, StreamBus, StreamEvent
-from edupilot.services.graph import DialogueGraphService
+from edupilot.agents.dialogue_graph import DialogueGraphAgent
 from edupilot.services.storage import SessionStore, UserGraphStore
 
 router = APIRouter(prefix="/ws", tags=["websocket"])
@@ -87,7 +87,7 @@ async def chat_websocket(websocket: WebSocket, user_id: str):
     await manager.connect(websocket, client_id)
 
     store = SessionStore()
-    dgraph = DialogueGraphService()
+    dgraph = DialogueGraphAgent()
     ug = UserGraphStore()
 
     try:

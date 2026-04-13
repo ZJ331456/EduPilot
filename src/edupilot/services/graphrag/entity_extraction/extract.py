@@ -4,15 +4,15 @@ import asyncio
 from openai import BadRequestError
 from collections import defaultdict
 import dspy
-from nano_graphrag.base import (
+from edupilot.services.graphrag.base import (
     BaseGraphStorage,
     BaseVectorStorage,
     TextChunkSchema,
 )
-from nano_graphrag.prompt_output_cn import PROMPTS
-from nano_graphrag._utils import logger, compute_mdhash_id
-from nano_graphrag.entity_extraction.module import TypedEntityRelationshipExtractor
-from nano_graphrag._op import _merge_edges_then_upsert, _merge_nodes_then_upsert
+from edupilot.services.graphrag.prompt_output_cn import PROMPTS
+from edupilot.services.graphrag._utils import logger, compute_mdhash_id
+from edupilot.services.graphrag.entity_extraction.module import TypedEntityRelationshipExtractor
+from edupilot.services.graphrag._op import _merge_edges_then_upsert, _merge_nodes_then_upsert
 
 
 async def generate_dataset(

@@ -9,7 +9,7 @@ from fastapi import APIRouter
 from pydantic import BaseModel, Field
 
 from edupilot.config.settings import get_settings
-from edupilot.services.graph import KnowledgeGraphService
+from edupilot.services.graphrag import KnowledgeGraphService
 from edupilot.services.storage import SessionStore, UserGraphStore
 
 router = APIRouter(prefix="/graph", tags=["graph"])

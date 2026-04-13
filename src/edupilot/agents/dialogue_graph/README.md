@@ -2,31 +2,18 @@
 
 对话图谱模块，负责从对话内容中实时抽取实体和关系，构建结构化的知识网络。
 
-## 模块概述
+## 核心类
 
-该模块目前处于待开发状态，计划实现以下功能：
-
-- 对话内容实体识别
-- 实体关系抽取
-- 图谱动态更新
-- 知识融合与推理
-
-## 核心服务
-
-### DialogueGraphService
-
-对话图谱服务，负责对话内容到图谱结构的转换。
+### DialogueGraphAgent
 
 ```python
-class DialogueGraphService:
-    async def extract(self, text: str) -> Tuple[List[Dict], List[Dict]]:
-        """
-        从文本中抽取节点和边
+from edupilot.agents.dialogue_graph import DialogueGraphAgent
 
-        Returns:
-            Tuple[List[Dict], List[Dict]]: (nodes, edges)
-        """
+agent = DialogueGraphAgent()
+nodes, edges = await agent.extract(dialogue_text)
 ```
+
+从文本中抽取节点和边，返回 `(nodes, edges)`。
 
 ## 数据结构
 
@@ -156,9 +143,9 @@ data/
 ### 抽取对话图谱
 
 ```python
-from edupilot.services.graph import DialogueGraphService
+from edupilot.agents.dialogue_graph import DialogueGraphAgent
 
-service = DialogueGraphService()
+agent = DialogueGraphAgent()
 
 # 从对话历史抽取图谱
 dialogue_history = """
@@ -169,7 +156,7 @@ dialogue_history = """
 助手：深度学习是机器学习的一个子领域...
 """
 
-nodes, edges = await service.extract(dialogue_history)
+nodes, edges = await agent.extract(dialogue_history)
 print(f"抽取到 {len(nodes)} 个节点, {len(edges)} 条边")
 ```
 
@@ -213,4 +200,4 @@ if req.update_graph:
 
 - [ChatAgent](chat/README.md) - 对话智能体
 - [UserGraphStore](../services/storage/user_graph_store.py) - 用户长期图谱存储
-- [KnowledgeGraphService](../services/graph/knowledge_graph_service.py) - 知识库图谱服务
+- [KnowledgeGraphService](../services/graphrag/knowledge_graph_service.py) - 知识库图谱服务

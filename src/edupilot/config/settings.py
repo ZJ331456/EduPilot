@@ -42,7 +42,7 @@ class Settings(BaseSettings):
     graphrag_llm_max_async: int = Field(
         default=2,
         alias="GRAPHRAG_LLM_MAX_ASYNC",
-        description="nano_graphrag 同时进行的 chat 请求数上限，免费档建议 1～2",
+        description="GraphRAG 同时进行的 chat 请求数上限，免费档建议 1～2",
     )
     graphrag_embedding_max_async: int = Field(
         default=2,

@@ -10,7 +10,7 @@ import networkx as nx
 
 from edupilot.config.settings import get_settings
 from edupilot.services.llm import build_graphrag_functions, get_llm_client
-from nano_graphrag import GraphRAG, QueryParam
+from edupilot.services.graphrag import GraphRAG, QueryParam
 
 
 def _graphml_path(working_dir: Path) -> Path:

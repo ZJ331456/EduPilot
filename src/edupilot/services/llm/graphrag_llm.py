@@ -9,8 +9,8 @@ from openai import AsyncOpenAI, APIConnectionError, RateLimitError
 from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
 
 from edupilot.config.settings import Settings
-from nano_graphrag._utils import compute_args_hash, wrap_embedding_func_with_attrs
-from nano_graphrag.base import BaseKVStorage
+from edupilot.services.graphrag._utils import compute_args_hash, wrap_embedding_func_with_attrs
+from edupilot.services.graphrag.base import BaseKVStorage
 
 
 def build_graphrag_functions(settings: Settings, client: AsyncOpenAI):

@@ -10,7 +10,7 @@ from typing import Any, Dict, List, Optional
 
 from edupilot.core.protocol import BaseTool, ToolDefinition, ToolResult
 from edupilot.services.llm import get_llm_client
-from edupilot.services.graph import KnowledgeGraphService
+from edupilot.services.graphrag import KnowledgeGraphService
 
 
 class RAGTool(BaseTool):

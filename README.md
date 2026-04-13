@@ -73,11 +73,25 @@ edupilot/
 │   ├── evaluation/        # EvaluationAgent (学习评测)
 │   ├── learning_planner/  # LearningPlannerAgent (学习规划)
 │   ├── user_profile/      # UserProfileAgent (用户画像)
-│   ├── dialogue_graph/    # DialogueGraphService (对话图谱抽取)
+│   ├── dialogue_graph/    # DialogueGraphAgent (对话图谱抽取)
 │   └── tools/             # RAG / Brainstorm / Reason / Summary / CodeExplain
 ├── services/              # 业务服务层
 │   ├── llm/              # OpenAI 兼容客户端 + GraphRAG LLM 适配
-│   ├── graph/            # KnowledgeGraphService / DialogueGraphService
+│   ├── graphrag/         # GraphRAG 内核 + KnowledgeGraphService
+│   │   ├── graphrag.py       # GraphRAG 主类 / QueryParam
+│   │   ├── base.py          # 存储抽象基类
+│   │   ├── _llm.py          # LLM 适配 / qwen_complete / qwen_embedding
+│   │   ├── _op.py           # 实体/关系/社区核心操作
+│   │   ├── _splitter.py     # 文本分块
+│   │   ├── _utils.py        # 工具函数
+│   │   ├── entity_extraction/  # DSPy 实体关系抽取
+│   │   ├── prompt_output_cn.py  # 中文提示词模板
+│   │   ├── _storage/        # 多后端存储
+│   │   │   ├── kv_json.py        # JSON KV 存储
+│   │   │   ├── vdb_nanovectordb.py  # 向量存储
+│   │   │   ├── vdb_hnswlib.py    # HNSW 向量存储
+│   │   │   └── gdb_networkx.py   # NetworkX 图存储
+│   │   └── knowledge_graph_service.py  # 知识库图谱服务
 │   └── storage/          # Session / Profile / UserGraph / Statistics (JSON)
 ├── core/                  # 核心协议
 │   ├── protocol.py       # UnifiedContext / AgentMode / ToolDefinition
@@ -92,7 +106,7 @@ edupilot/
 
 - **框架**：FastAPI + Uvicorn + Pydantic
 - **LLM**：OpenAI Compatible API（SiliconFlow / 百炼 / Local VLLM / Ollama）
-- **GraphRAG**：nano-graphrag
+- **GraphRAG**：nano-graphrag（内嵌于 `services/graphrag/` 目录）
 - **向量**：nano-vectordb
 - **图算法**：NetworkX + graspologic
 - **流式**：sse-starlette + WebSocket
@@ -182,10 +196,12 @@ npm run dev
 | `/api/v1/statistics` | GET | 系统统计信息 |
 | `/api/v1/health` | GET | 健康检查 |
 
-## Agent 模块
+## 模块
 
-| Agent | 功能 |
-|-------|------|
+| 模块 | 功能 |
+|------|------|
+| [GraphRAG](src/edupilot/services/graphrag/) | GraphRAG 内核，实体抽取、图谱构建、语义检索 |
+| [KnowledgeGraphService](src/edupilot/services/graph/) | 知识图谱服务，封装 GraphRAG 对外接口 |
 | [ChatAgent](src/edupilot/agents/chat/README.md) | 核心对话交互，意图分析 + 智能路由 + 双模式回复 |
 | [EvaluationAgent](src/edupilot/agents/evaluation/README.md) | 学习效果评测与反馈 |
 | [LearningPlannerAgent](src/edupilot/agents/learning_planner/README.md) | 个性化学习计划生成 |

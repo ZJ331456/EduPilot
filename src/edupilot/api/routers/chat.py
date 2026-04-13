@@ -10,7 +10,7 @@ from pydantic import BaseModel, Field
 from edupilot.agents.chat.agent import ChatAgent, ChatMode
 from edupilot.agents.base.agent import AgentConfig
 from edupilot.core.protocol import AgentMode, UnifiedContext
-from edupilot.services.graph import DialogueGraphService
+from edupilot.agents.dialogue_graph import DialogueGraphAgent
 from edupilot.services.storage import SessionStore, UserGraphStore, get_statistics_store
 
 router = APIRouter(prefix="/chat", tags=["chat"])
@@ -42,7 +42,7 @@ async def chat(req: ChatRequest):
     """
     import time
     store = SessionStore()
-    dgraph = DialogueGraphService()
+    dgraph = DialogueGraphAgent()
     ug = UserGraphStore()
     stats = get_statistics_store()
 

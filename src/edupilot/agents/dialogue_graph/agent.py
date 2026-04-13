@@ -18,7 +18,7 @@ def _parse_json_block(text: str) -> Dict[str, Any]:
     return json.loads(m.group(0))
 
 
-class DialogueGraphService:
+class DialogueGraphAgent:
     def __init__(self) -> None:
         self._prompts = load_agent_prompt("dialogue_graph")
         self._llm = get_llm_client()
